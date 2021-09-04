@@ -1,0 +1,11 @@
+#Exclude Visual Code workspace
+*.code-workspace
+
+#Exclude node modules
+node_modules/**
+
+#Exlude compiled files
+dist/**
+
+#Exclude protected files
+.env
