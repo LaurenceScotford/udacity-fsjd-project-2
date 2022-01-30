@@ -12,25 +12,13 @@ TODO: Add API documentation
 
 ## Set up and scripts
 
-To set up the project
+To set up the project (NOTE normally some of this detail would not be included in a README file, but has been included here to allow the project to be set up for evaluation):
 
-Postgres must be installed locally.
-
-Log into the local Postgres server and run the following command to set up the required databases and users:
+Create a .env file in the project root with the database connection details as follows (NOTE: these datils should on;ly be used for testing the solution NOT for confidential data):
 
 ```
-CREATE USER store_user WITH PASSWORD 'shopkeeper_a1';
-CREATE DATABASE store;
-GRANT ALL PRIVILEGES ON DATABASE store TO store_user;
+ENV=dev
 
-CREATE USER test_store_user WITH PASSWORD 'fall_guy_z100';
-CREATE DATABASE test_store;
-GRANT ALL PRIVILEGES ON DATABASE test_store TO test_store_user;
-```
-
-Create a .env file in the project root with the database connection details as follows:
-
-```
 PROD_POSTGRES_HOST=127.0.0.1
 PROD_POSTGRES_DB=store
 PROD_POSTGRES_USER=store_user
@@ -42,11 +30,23 @@ TEST_POSTGRES_USER=test_store_user
 TEST_POSTGRES_PASSWORD=fall_guy_z100
 ```
 
-Apply the migrations to build the required tables in the databases by executing the following command from the project root:
+Set up the database (NOTE: this app uses a dockerised version of the postgres database to avoid having to install postgres locally)
+```
+docker-compose up
+```
+
+Install the application:
+```
+npm install
+```
+
+Start the application:
 
 ```
-db-migrate up
+npm run start
 ```
+
+NOTE this will run the required database migrations using db-migrate before starting the server.
 
 ## Third party libraries and resources
 

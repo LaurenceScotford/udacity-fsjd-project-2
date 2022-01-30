@@ -9,3 +9,6 @@ dist/**
 
 #Exclude protected files
 .env
+
+#Exclude built database
+data/**
