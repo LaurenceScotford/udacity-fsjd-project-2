@@ -24,43 +24,49 @@ describe("Category Model", () => {
     });
 
     it('should add a category when the create method is invoked', async () => {
-        const result = await store.create('Groceries');
-        expect(result).toEqual({
-            id: 1,
+        const result = await store.create({
+            id: '',
             category: 'Groceries'
         });
+        expect(result.category).toEqual('Groceries');
     });
 
     it('should return a list of categories when the index method is invoked', async () => {
+        await store.create({
+            id: '',
+            category: 'Fitness'
+        });
         const result = await store.index();
-        expect(result).toEqual([{
-            id: 1,
-            category: 'Groceries'
-        }]);
+        expect(result).not.toBe([]);
     });
 
-    let test_data : Category;
-
     it('should return the correct category when the show method is invoked', async () => {
-        test_data = await store.show('1');
-        expect(test_data).toEqual({
-            id: 1,
-            category: 'Groceries'
+        const result = await store.create({
+            id: '',
+            category: 'Health'
         });
+        const test_data = await store.show(result.id);
+        expect(test_data.category).toEqual('Health');
     });
 
     it('should update the category name when the update method is invoked', async () => {
-        test_data.category = 'Clothing';
-        const result = await store.update(test_data);
-        expect(result).toEqual({
-            id: 1,
-            category: 'Clothing'
+        const newCat = await store.create({
+            id: '',
+            category: 'Toys'
         });
+        newCat.category = 'Games';
+        const result = await store.update(newCat);
+        expect(result.category).toEqual('Games');
     });
 
     it('should remove the category when the delete method is invoked', async () => {
-        await store.delete('1');
-        const result = await store.index();
-        expect(result).toEqual([]);
+        const newCat = await store.create({
+            id: '',
+            category: 'Clothing'
+        });
+        const id = newCat.id;
+        await store.delete(id);
+        const result = await store.show(id);
+        expect(result).toBeUndefined();
     });
 });

@@ -4,7 +4,9 @@ services:
   postgres:
     image: postgres
     ports:
-      - '5432:5432'
+      - '${PROD_POSTGRES_PORT}:${DEFAULT_POSTGRES_PORT}'
+    expose:
+      - '${PROD_POSTGRES_PORT}'
     environment:
       POSTGRES_USER: ${PROD_POSTGRES_USER}
       POSTGRES_DB: ${PROD_POSTGRES_DB}
@@ -12,6 +14,18 @@ services:
     volumes:
       - ./data:/var/lib/postgresql/data
     container_name: postgres-db
+  
+  postgres-test:
+    image: postgres
+    ports:
+      - '${TEST_POSTGRES_PORT}:${DEFAULT_POSTGRES_PORT}'
+    expose:
+      - '${TEST_POSTGRES_PORT}'
+    environment: 
+      POSTGRES_USER: ${TEST_POSTGRES_USER}
+      POSTGRES_DB: ${TEST_POSTGRES_DB}
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
+    container_name: postgres-test-db
 
 volumes:
   postgres: 

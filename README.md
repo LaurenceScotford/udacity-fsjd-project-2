@@ -14,7 +14,7 @@ TODO: Add API documentation
 
 To set up the project (NOTE normally some of this detail would not be included in a README file, but has been included here to allow the project to be set up for evaluation):
 
-Create a .env file in the project root with the database connection details as follows (NOTE: these datils should on;ly be used for testing the solution NOT for confidential data):
+Create a .env file in the project root with the server and database connection details as follows (NOTE: these details should only be used for testing the solution NOT for confidential data. Ports can be changed here if you have a conflict with existing services):
 
 ```
 ENV=dev
@@ -28,6 +28,9 @@ TEST_POSTGRES_HOST=127.0.0.1
 TEST_POSTGRES_DB=test_store
 TEST_POSTGRES_USER=test_store_user
 TEST_POSTGRES_PASSWORD=fall_guy_z100
+
+API_HOST=127.0.0.1
+API_PORT=3000
 ```
 
 Set up the database (NOTE: this app uses a dockerised version of the postgres database to avoid having to install postgres locally)

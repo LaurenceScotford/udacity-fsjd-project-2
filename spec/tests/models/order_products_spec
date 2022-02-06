@@ -1,0 +1,242 @@
+import {Category, CategoryStore} from '../../../src/models/categories';
+import {Product, ProductStore} from '../../../src/models/products';
+import {User, UserStore} from '../../../src/models/users';
+import {Order, OrderStore} from '../../../src/models/orders';
+import {OrderProducts, OrderProductsStore} from '../../../src/models/order_products';
+
+const categories = new CategoryStore();
+const products = new ProductStore();
+const users = new UserStore();
+const orders = new OrderStore();
+const store = new OrderProductsStore();
+
+
+describe("Order_Products Model", () => {
+    it('should have an index method', () => {
+        expect(store.index).toBeDefined();
+    });
+
+    it('should have a show method', () => {
+        expect(store.show).toBeDefined();
+    });
+
+    it('should have a create method', () => {
+        expect(store.create).toBeDefined();
+    });
+
+    it('should have a update method', () => {
+        expect(store.update).toBeDefined();
+    });
+
+    it('should have a delete method', () => {
+        expect(store.delete).toBeDefined();
+    });
+
+    it('should add an order_products entry when the create method is invoked', async () => {
+        const category = await categories.create({
+            id: '',
+            category: 'Pets'
+        });
+        const product = await products.create({
+            id: '',
+            name: 'Chew Toy', 
+            price: '2.99',
+            category: category.id
+        });
+        const productId = product.id.toString();
+        const user = await users.create({
+            id: '',
+            first_name: 'Graham',
+            last_name: 'Seven',
+            password_digest: 'kjidsyhweiuh78687-&&*%ghyugv' 
+        });
+        const order = await orders.create({
+            id: '',
+            user_id: user.id,
+            status: 'active'
+        });
+        const orderId = order.id.toString();
+        const result = await store.create({
+            id: '',
+            order_id: order.id, 
+            product_id: product.id,
+            quantity: 2
+        });
+        expect(result).toEqual({
+            id: result.id,
+            order_id: orderId, 
+            product_id: productId,
+            quantity: 2
+        });
+    });
+
+    it('should return a list of order_Products when the index method is invoked', async () => {
+        const category = await categories.create({
+            id: '',
+            category: 'Electronics'
+        });
+        const product = await products.create({
+            id: '',
+            name: 'Laptop PC', 
+            price: '699.99',
+            category: category.id
+        });
+        const user = await users.create({
+            id: '',
+            first_name: 'Heather',
+            last_name: 'Eight',
+            password_digest: 'idfhyr66487&^&hduy7s76' 
+        });
+        const order = await orders.create({
+            id: '',
+            user_id: user.id,
+            status: 'active'
+        });
+        await store.create({
+            id: '',
+            order_id: order.id, 
+            product_id: product.id,
+            quantity: 1
+        });
+        const result = await store.index();
+        expect(result).not.toBe([]);
+    });
+
+    it('should return the correct order_products when the show method is invoked', async () => {
+        const category = await categories.create({
+            id: '',
+            category: 'Furniture'
+        });
+        const product = await products.create({
+            id: '',
+            name: 'Side Table', 
+            price: '120.95',
+            category: category.id
+        });
+        const productId = product.id.toString();
+        const user = await users.create({
+            id: '',
+            first_name: 'Igor',
+            last_name: 'Nine',
+            password_digest: 'djkdujh&*^658765Hbny^' 
+        });
+        const order = await orders.create({
+            id: '',
+            user_id: user.id,
+            status: 'active'
+        });
+        const orderId = order.id.toString();
+        const result = await store.create({
+            id: '',
+            order_id: order.id, 
+            product_id: product.id,
+            quantity: 3
+        });
+        const test_data = await store.show(result.id);
+        expect(test_data).toEqual({
+            id: result.id,
+            order_id: orderId, 
+            product_id: productId,
+            quantity: 3
+        });
+    });
+
+    it('should update the order_id, product_id and quantity when the update method is invoked', async () => {
+        const category1 = await categories.create({
+            id: '',
+            category: 'Paint'
+        });
+        const product1 = await products.create({
+            id: '',
+            name: 'White with a hint of cinnamon 5 ltr', 
+            price: '30.00',
+            category: category1.id
+        });
+        const category2 = await categories.create({
+            id: '',
+            category: 'Wallpaper'
+        });
+        const product2 = await products.create({
+            id: '',
+            name: 'Deep purple paisley flock 10m', 
+            price: '89.00',
+            category: category2.id
+        });
+        const productId = product2.id.toString();
+        const user1 = await users.create({
+            id: '',
+            first_name: 'Jasmine',
+            last_name: 'Ten',
+            password_digest: 'idhueg8766*()&*^uihws867' 
+        });
+        const user2 = await users.create({
+            id: '',
+            first_name: 'Kevin',
+            last_name: 'Eleven',
+            password_digest: 'dkioehsf809ew787234980943u9987' 
+        });
+        const order1 = await orders.create({
+            id: '',
+            user_id: user1.id,
+            status: 'active'
+        });
+        const order2 = await orders.create({
+            id: '',
+            user_id: user2.id,
+            status: 'active'
+        });
+        const orderId = order2.id.toString();
+        const newOrdProds = await store.create({
+            id: '',
+            order_id: order1.id, 
+            product_id: product1.id,
+            quantity: 4
+        });
+        newOrdProds.order_id = order2.id;
+        newOrdProds.product_id = product2.id;
+        newOrdProds.quantity = 10;
+        const result = await store.update(newOrdProds);
+        expect(result).toEqual({
+            id: result.id,
+            order_id: orderId, 
+            product_id: productId,
+            quantity: 10
+        });
+    });
+
+    it('should remove the product when the delete method is invoked', async () => {
+        const category = await categories.create({
+            id: '',
+            category: 'Art'
+        });
+        const product = await products.create({
+            id: '',
+            name: 'Newly discovered painting by Da Vinci', 
+            price: '1000000000.00',
+            category: category.id
+        });
+        const productId = product.id.toString();
+        const user = await users.create({
+            id: '',
+            first_name: 'Lisbeth',
+            last_name: 'Twelve',
+            password_digest: 'mnceidsfhui9878746^&iusiusdhb' 
+        });
+        const order = await orders.create({
+            id: '',
+            user_id: user.id,
+            status: 'complete'
+        });
+        const orderId = order.id.toString();
+        const newOrdProds = await store.create({
+            id: '',
+            order_id: order.id, 
+            product_id: product.id,
+            quantity: 1
+        });
+        const id = newOrdProds.id;
+        await store.delete(id);
+        const result = await store.show(id);
+        expect(result).toBeUndefined();
+    });
+});

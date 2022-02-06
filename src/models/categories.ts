@@ -1,7 +1,7 @@
 import db from '../database';
 
 export type Category = {
-    id: number;
+    id: string;
     category: string;
 };
 
@@ -30,11 +30,11 @@ export class CategoryStore {
     }
   }
 
-  async create(cat: string): Promise<Category> {
+  async create(cat: Category): Promise<Category> {
       try {
         const sql = 'INSERT INTO categories (category) VALUES($1) RETURNING *';
         const conn = await db.connect();
-        const result = await conn.query(sql, [cat]);
+        const result = await conn.query(sql, [cat.category]);
         const category = result.rows[0];
         conn.release();
         return category;
@@ -45,20 +45,20 @@ export class CategoryStore {
 
   async update(cat: Category): Promise<Category> {
       try {
-        const sql = 'UPDATE categories SET {category = ($1.category)} WHERE id = ($1.id) RETURNING *';
+        const sql = 'UPDATE categories SET category = ($1) WHERE id = ($2) RETURNING *';
         const conn = await db.connect();
-        const result = await conn.query(sql, [cat]);
+        const result = await conn.query(sql, [cat.category, cat.id]);
         const category = result.rows[0];
         conn.release();
         return category;
       } catch (err) {
-          throw new Error(`Could not add new category ${cat}. Error: ${err}`)
+          throw new Error(`Could not update category ${cat.category}. Error: ${err}`)
       }
   }
 
   async delete(id: string): Promise<Category> {
       try {
-        const sql = 'DELETE FROM categories WHERE id=($1)';
+        const sql = 'DELETE FROM categories WHERE id=($1) RETURNING *';
         const conn = await db.connect();
         const result = await conn.query(sql, [id]);
         const category = result.rows[0];
