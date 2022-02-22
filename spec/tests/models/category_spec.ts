@@ -65,7 +65,11 @@ describe("Category Model", () => {
             category: 'Clothing'
         });
         const id = newCat.id;
-        await store.delete(id);
+        const deletedCat = await store.delete(id);
+        expect(deletedCat).toEqual({
+            id: id,
+            category: 'Clothing'
+        }); 
         const result = await store.show(id);
         expect(result).toBeUndefined();
     });

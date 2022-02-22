@@ -1,7 +1,6 @@
-import {User, UserStore} from '../../../src/models/users';
-import {Order, OrderStore} from '../../../src/models/orders';
+import getForeignKey from '../helpers/get_foreign_key';
+import {OrderStore} from '../../../src/models/orders';
 
-const users = new UserStore();
 const store = new OrderStore();
 
 
@@ -27,16 +26,10 @@ describe("Order Model", () => {
     });
 
     it('should add an order when the create method is invoked', async () => {
-        const user = await users.create({
-            id: '',
-            first_name: 'Albert',
-            last_name: 'One',
-            password_digest: 'oljfioewq899877%$&^' 
-        });
-        const userId = user.id.toString();
+        const userId = await getForeignKey('user');
         const result = await store.create({
             id: '',
-            user_id: user.id, 
+            user_id: userId, 
             status: 'active'
         });
         expect(result).toEqual({
@@ -47,63 +40,57 @@ describe("Order Model", () => {
     });
 
     it('should return a list of orders when the index method is invoked', async () => {
-        const user = await users.create({
-            id: '',
-            first_name: 'Betty',
-            last_name: 'Two',
-            password_digest: 'hduihwqefnqeriuhjndjkbnweqhj' 
-        });
+        const userId = await getForeignKey('user');
         await store.create({
             id: '',
-            user_id: user.id, 
+            user_id: userId, 
             status: 'active'
         });
         const result = await store.index();
         expect(result).not.toBe([]);
     });
 
-    it('should return the correct product when the show method is invoked', async () => {
-        const user = await users.create({
-            id: '',
-            first_name: 'Carlos',
-            last_name: 'Three',
-            password_digest: '8978ghyu8G&^T^(*)gyugvf' 
-        });
+    it('should return the correct order when the show method is invoked', async () => {
+        const userId = await getForeignKey('user');
         const result = await store.create({
             id: '',
-            user_id: user.id, 
+            user_id: userId, 
             status: 'active'
         });
-        const userId = user.id.toString();
         const test_data = await store.show(result.id);
         expect(test_data).toEqual({
-            id: test_data.id,
+            id: result.id,
             user_id: userId,
             status: 'active'
         });
     });
 
     it('should update the user_id and status when the update method is invoked', async () => {
-        const user1 = await users.create({
-            id: '',
-            first_name: 'Debbie',
-            last_name: 'Four',
-            password_digest: 'ndftydhd7857%^78rh&^' 
-        });
-        const user2 = await users.create({
-            id: '',
-            first_name: 'Ewan',
-            last_name: 'Five',
-            password_digest: 'nfyrtfgt8uyw674735$%%^7rfgy67wq6%' 
-        });
+        const userId1 = await getForeignKey('user');
         const newOrder = await store.create({
             id: '',
-            user_id: user1.id,  
+            user_id: userId1,  
             status: 'active'
         });
-        newOrder.user_id = user2.id;
+        const userId2 = await getForeignKey('user');
+        newOrder.user_id = userId2;
         newOrder.status = 'complete';
-        const userId = user2.id.toString();
+        const result = await store.update(newOrder);
+        expect(result).toEqual({
+            id: result.id,
+            user_id: userId2,
+            status: 'complete'
+        });
+    });
+
+    it('should update selective properties when the update method is invoked with not all properties present', async () => {
+        const userId = await getForeignKey('user');
+        const newOrder = await store.create({
+            id: '',
+            user_id: userId,  
+            status: 'active'
+        });
+        newOrder.status = 'complete';
         const result = await store.update(newOrder);
         expect(result).toEqual({
             id: result.id,
@@ -113,19 +100,19 @@ describe("Order Model", () => {
     });
 
     it('should remove the order when the delete method is invoked', async () => {
-        const user = await users.create({
-            id: '',
-            first_name: 'Frances',
-            last_name: 'Six',
-            password_digest: 'ksurh*^77565&*(jhd76d' 
-        });
+        const userId = await getForeignKey('user');
         const newOrder = await store.create({
             id: '',
-            user_id: user.id, 
+            user_id: userId, 
             status: 'complete'
         });
         const id = newOrder.id;
-        await store.delete(id);
+        const deletedOrder = await store.delete(id);
+        expect(deletedOrder).toEqual({
+            id: id,
+            user_id: userId, 
+            status: 'complete'
+        });
         const result = await store.show(id);
         expect(result).toBeUndefined();
     });

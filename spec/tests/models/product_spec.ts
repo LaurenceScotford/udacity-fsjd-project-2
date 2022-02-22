@@ -1,7 +1,6 @@
-import {Category, CategoryStore} from '../../../src/models/categories';
-import {Product, ProductStore} from '../../../src/models/products';
+import getForeignKey from '../helpers/get_foreign_key';
+import {ProductStore} from '../../../src/models/products';
 
-const categories = new CategoryStore();
 const store = new ProductStore();
 
 
@@ -27,102 +26,87 @@ describe("Product Model", () => {
     });
 
     it('should add a product when the create method is invoked', async () => {
-        const category = await categories.create({
-            id: '',
-            category: 'Dental'
-        });
-        const catId = category.id.toString();
+        const catId = await getForeignKey('category');
         const result = await store.create({
             id: '',
             name: 'Toothbrush', 
-            price: '2.99',
-            category: category.id
+            price: 2.99,
+            category: catId
         });
         expect(result).toEqual({
             id: result.id,
             name: 'Toothbrush',
-            price: '2.99',
+            price: 2.99,
             category: catId
         });
     });
 
     it('should return a list of products when the index method is invoked', async () => {
-        const category = await categories.create({
-            id: '',
-            category: 'Lesiure'
-        });
+        const catId = await getForeignKey('category');
         await store.create({
             id: '',
             name: 'Beach Ball', 
-            price: '2.00', 
-            category: category.id
+            price: 2.00, 
+            category: catId
         });
         const result = await store.index();
         expect(result).not.toBe([]);
     });
 
     it('should return the correct product when the show method is invoked', async () => {
-        const category = await categories.create({
-            id: '',
-            category: 'Motoring'
-        });
+        const catId = await getForeignKey('category');
         const result = await store.create({
             id: '',
             name: 'SatNav',
-            price: '199.00', 
-            category: category.id
+            price: 199.00, 
+            category: catId
         });
-        const catId = category.id.toString();
         const test_data = await store.show(result.id);
         expect(test_data).toEqual({
             id: test_data.id,
             name: 'SatNav',
-            price: '199.00',
+            price: 199.00,
             category: catId
         });
     });
 
     it('should update the product name, price and category when the update method is invoked', async () => {
-        const category1 = await categories.create({
-            id: '',
-            category: 'Vegetables'
-        });
-        const category2 = await categories.create({
-            id: '',
-            category: 'Fruit'
-        });
+        const catId1 = await getForeignKey('category');
+        const catId2 = await getForeignKey('category');
         const newProd = await store.create({
             id: '',
             name: 'Tomatoe', 
-            price: '2.00', 
-            category: category1.id
+            price: 2.00, 
+            category: catId1
         });
         newProd.name = 'Tomato';
-        newProd.price = '0.20';
-        newProd.category = category2.id;
-        const catId = category2.id.toString();
+        newProd.price = 0.20;
+        newProd.category = catId2;
         const result = await store.update(newProd);
         expect(result).toEqual({
             id: result.id,
             name: 'Tomato',
-            price: '0.20',
-            category: catId
+            price: 0.20,
+            category: catId2
         });
     });
 
     it('should remove the product when the delete method is invoked', async () => {
-        const category = await categories.create({
-            id: '',
-            category: 'Garden'
-        });
+        const catId = await getForeignKey('category');
         const newProd = await store.create({
             id: '',
             name: 'Watering Can', 
-            price: '19.75', 
-            category: category.id
+            price: 19.75, 
+            category: catId
         });
         const id = newProd.id;
-        await store.delete(id);
+        const deletedProduct = await store.delete(id);
+        expect(deletedProduct).toEqual({
+            id: id,
+            name: 'Watering Can', 
+            price: 19.75, 
+            category: catId
+        });
         const result = await store.show(id);
         expect(result).toBeUndefined();
     });

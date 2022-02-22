@@ -8,7 +8,8 @@ This is a web API to provide backend functionality for an online storefront. It 
 
 ## Using the API
 
-TODO: Add API documentation
+NOTE: You can see a copy of these usage instructions by visiting the root of the API service in a web browser.
+
 
 ## Set up and scripts
 

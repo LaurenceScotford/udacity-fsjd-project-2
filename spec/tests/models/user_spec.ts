@@ -29,13 +29,15 @@ describe("User Model", () => {
             id: '',
             first_name: 'John', 
             last_name: 'Wanamaker',
-            password_digest: 'duishfewn398u243fewn@~@'
+            username: 'jwanamaker',
+            password: 'duishfewn398u243fewn@~@'
         });
         expect(result).toEqual({
             id: result.id,
             first_name: 'John',
             last_name: 'Wanamaker',
-            password_digest: 'duishfewn398u243fewn@~@'
+            username: 'jwanamaker',
+            password: ''
         });
     });
 
@@ -43,8 +45,9 @@ describe("User Model", () => {
         await store.create({
             id: '',
             first_name: 'Sam', 
-            last_name: 'Walton', 
-            password_digest: 'jioed8u43%*&okop'
+            last_name: 'Walton',
+            username: 'swalton',
+            password: 'jioed8u43%*&okop'
         });
         const result = await store.index();
         expect(result).not.toBe([]);
@@ -54,34 +57,61 @@ describe("User Model", () => {
         const result = await store.create({
             id: '',
             first_name: 'Harry',
-            last_name: 'Selfridge', 
-            password_digest: 'nyasrfuh8997%^$dfnweh'
+            last_name: 'Selfridge',
+            username: 'hselfridge',
+            password: 'nyasrfuh8997%^$dfnweh'
         });
         const test_data = await store.show(result.id);
         expect(test_data).toEqual({
             id: test_data.id,
             first_name: 'Harry',
-            last_name: 'Selfridge', 
-            password_digest: 'nyasrfuh8997%^$dfnweh'
+            last_name: 'Selfridge',
+            username: 'hselfridge',
+            password: ''
         });
     });
 
-    it('should update the user first_name, last_name and password_digest when the update method is invoked', async () => {
+    it('should update the user first_name, last_name, username and password_digest when the update method is invoked', async () => {
         const newUser = await store.create({
             id: '',
             first_name: 'Richard', 
-            last_name: 'Sears', 
-            password_digest: 'bnyteg974uhweu^hed6%R'
+            last_name: 'Sears',
+            username: 'rsears',
+            password: 'bnyteg974uhweu^hed6%R'
         });
         newUser.first_name = 'Alvah';
         newUser.last_name = 'Roebuck';
-        newUser.password_digest = 'njxczvyur897u^%R$Rhbdfs67*&';
+        newUser.username = 'aroebuck';
+        newUser.password = 'njxczvyur897u^%R$Rhbdfs67*&';
         const result = await store.update(newUser);
         expect(result).toEqual({
             id: result.id,
             first_name: 'Alvah',
             last_name: 'Roebuck',
-            password_digest: 'njxczvyur897u^%R$Rhbdfs67*&'
+            username: 'aroebuck',
+            password: ''
+        });
+    });
+
+    it('should update selective properties when the update method is invoked with not all properties present', async () => {
+        const newUser = await store.create({
+            id: '',
+            first_name: 'Frank', 
+            last_name: 'Woolworth',
+            username: 'fwoolworth',
+            password: 'dasufh78945u87^^uighedw'
+        });
+        newUser.first_name = '';
+        newUser.last_name = '';
+        newUser.username = 'frankw';
+        newUser.password = '';
+        const result = await store.update(newUser);
+        expect(result).toEqual({
+            id: result.id,
+            first_name: 'Frank',
+            last_name: 'Woolworth',
+            username: 'frankw',
+            password: ''
         });
     });
 
@@ -89,11 +119,19 @@ describe("User Model", () => {
         const newUser = await store.create({
             id: '',
             first_name: 'Sebastian', 
-            last_name: 'Kresge', 
-            password_digest: 'ndsa79342de8d3(*&^iwuehd'
+            last_name: 'Kresge',
+            username: 'skresge',
+            password: 'ndsa79342de8d3(*&^iwuehd'
         });
         const id = newUser.id;
-        await store.delete(id);
+        const deletedUser = await store.delete(id);
+        expect(deletedUser).toEqual({
+            id: id,
+            first_name: 'Sebastian', 
+            last_name: 'Kresge',
+            username: 'skresge', 
+            password: ''
+        });
         const result = await store.show(id);
         expect(result).toBeUndefined();
     });

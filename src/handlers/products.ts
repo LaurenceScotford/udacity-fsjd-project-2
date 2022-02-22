@@ -1,0 +1,78 @@
+import e from 'express';
+import express, {Request, Response} from 'express';
+import verifyAuthToken from '../middleware/verifyAuthToken';
+import {Product, ProductStore} from '../models/products';
+
+const store = new ProductStore();
+
+const index = async (_req: Request, res: Response) => {
+    try {
+        const result = await store.index();
+        res.json(result);
+    } catch(err) {
+        res.status(500);
+        res.json(err);
+    }
+};
+
+const show = async (req: Request, res: Response) => {
+    try {
+        const result = await store.show(req.params.id);
+        res.json(result);
+    } catch(err) {
+        res.status(500);
+        res.json(err);
+    }
+};
+
+const create = async (req: Request, res: Response) => {
+    try {
+        const product: Product = {
+            id: '',
+            name: req.body.name,
+            price: req.body.price,
+            category: req.body.category
+        };
+        const newProduct = await store.create(product);
+        res.json(newProduct);
+    } catch(err) {
+        res.status(400);
+        res.json(err);
+    }  
+};
+
+const update = async (req: Request, res: Response) => {
+    try {
+        const product: Product = {
+            id: req.params.id,
+            name: req.body.name,
+            price: req.body.price,
+            category: req.body.category
+        }
+        const updatedProduct = await store.update(product);
+        res.json(updatedProduct);
+    } catch(err) {
+        res.status(400);
+        res.json(err);
+    }
+};
+
+const destroy = async (req: Request, res: Response) => {
+    try {
+        const deletedProduct = await store.delete(req.params.id);
+        res.json(deletedProduct);
+    } catch(err) {
+        res.status(400);
+        res.json(err);
+    }
+}
+
+const products_routes = (app: express.Application) => {
+    app.get('/products', index);
+    app.get('/products/:id', show);
+    app.post('/products', verifyAuthToken, create);
+    app.put('/products/:id', verifyAuthToken, update);
+    app.delete('/products/:id', verifyAuthToken, destroy);
+};
+
+export default products_routes;
