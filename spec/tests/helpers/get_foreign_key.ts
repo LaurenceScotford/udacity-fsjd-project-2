@@ -42,6 +42,7 @@ async function getForeignKey(type: string) : Promise<string> {
                 }
                 const newUser = await userStore.create({
                     id: '',
+                    auth_level: '1',
                     first_name: getRandomString(),
                     last_name: getRandomString(),
                     username: userName,

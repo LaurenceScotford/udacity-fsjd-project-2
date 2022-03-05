@@ -6,10 +6,79 @@ This is my submission for the second project for the Udacity Full Stack Javascri
 
 This is a web API to provide backend functionality for an online storefront. It runs on node.js and express using a postgres database.
 
+It supports the following models:
+
+**Users** - A list of valid users for the database (only valid users can create, update or destroy entries)
+
+| Field | Description |
+| ----- | ----------- |
+| id | A unique id representing this user |
+| first_name | The actual first name of the user |
+| last_name | The actual last name of the user |
+| username | A unique identifier for the user - also used to access the account |
+| password | The password used to access the user's account |
+
+**Customers** - A list of customers
+
+| Field | Description |
+| ----- | ----------- |
+| id | A unique id representing this customer |
+| first_name | The actual first name of the customer |
+| last_name | The actual last name of the customer |
+
+**Categories** - A category for types of product sold
+
+| Field | Description |
+| ----- | ----------- |
+| id | A unique id representing this category |
+| category | The name of the category (this must also be unique) |
+
+**Products** - A list of products
+
+| Field | Description |
+| ----- | ----------- |
+| id | A unique id representing this product |
+| name | A name describing the product |
+| price | A numeric price for the product |
+| category | The id of an existing category |
+
+**Orders** - An order is the purchase of 
+
+| Field | Description |
+| ----- | ----------- |
+| id | A unique id representing this product |
+| name | A name describing the product |
+| price | A numeric price for the product |
+| category | The id of an existing category |
+
 ## Using the API
 
 NOTE: You can see a copy of these usage instructions by visiting the root of the API service in a web browser.
 
+To use the API, append the URL with a route to one of the following endpoints:
+
+| Task | HTTP verb | URL | Authentication required | Body | Returns |
+| --- | --- | --- | --- | --- | --- |
+| Create user | POST | `/users` | No | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created user |
+| Index users | GET | `/users` | No | None | JSON file with array of users |
+| Show user | GET | `/users/:id` | No | None | JSON file with selected user |
+| Update user | PUT | `/users/:id` | Yes | JSON object containing properties to be amended with new values (any properties not included will be left unchanged) | JSON file with the updated user |
+| Destroy user | DELETE | `/users/:id` | Yes | None | JSON file with the deleted user |
+| Create category | POST | `/categories` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created category |
+| Index categories | GET | `/categories` | No | None | JSON file with array of categories |
+| Show category | GET | `/categories/:id` | No | None | JSON file with selected category |
+| Update categories | PUT | `/categories/:id` | Yes | JSON object containing property to be amended with new value | JSON file with the updated category |
+| Destroy category | DELETE | `/categories/:id` | Yes | None | JSON file with the deleted category |
+| Create product | POST | `/products` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created product |
+| Index products | GET | `/products` | No | None | JSON file with array of products |
+| Show product | GET | `/products/:id` | No | None | JSON file with selected product |
+| Update products | PUT | `/products/:id` | Yes | JSON object containing properties to be amended with new values (any properties not included will be left unchanged) | JSON file with the updated product |
+| Destroy product | DELETE | `/products/:id` | Yes | None | JSON file with the deleted product |
+| Create order | POST | `/orders` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created order (see below) |
+| Index products | GET | `/orders` | No | None | JSON file with array of products |
+| Show product | GET | `/products/:id` | No | None | JSON file with selected product |
+| Update products | PUT | `/products/:id` | Yes | JSON object containing properties to be amended with new values (any properties not included will be left unchanged) | JSON file with the updated product |
+| Destroy product | DELETE | `/products/:id` | Yes | None | JSON file with the deleted product |
 
 ## Set up and scripts
 

@@ -1,6 +1,6 @@
 import express, {Request, Response} from 'express';
 import jwt from 'jsonwebtoken';
-import verifyAuthToken from '../middleware/verifyAuthToken';
+import {verifyAuthToken, noLeapFrog} from '../middleware/verifyAuthToken';
 import {User, UserStore} from '../models/users';
 
 const store = new UserStore();
@@ -29,6 +29,7 @@ const create = async (req: Request, res: Response) => {
     try {
         const user: User = {
             id: '',
+            auth_level: req.body.auth_level,
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             username: req.body.username,
@@ -46,6 +47,7 @@ const update = async (req: Request, res: Response) => {
     try {
         const user: User = {
             id: req.params.id,
+            auth_level: req.body.auth_level,
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             username: req.body.username,
@@ -81,12 +83,11 @@ const authenticate = async (req: Request, res: Response) => {
 }
 
 const users_routes = (app: express.Application) => {
-    console.log("Processing request");
     app.get('/users', index);
     app.get('/users/:id', show);
-    app.post('/users', verifyAuthToken, create);
-    app.put('/users/:id', verifyAuthToken, update);
-    app.delete('/users/:id', verifyAuthToken, destroy);
+    app.post('/users', verifyAuthToken(1, 2, 'id'), noLeapFrog, create);
+    app.put('/users/:id', verifyAuthToken(1, 2, 'id'), noLeapFrog, update);
+    app.delete('/users/:id', verifyAuthToken(1, 2, 'id'), noLeapFrog, destroy);
     app.post('/users/authenticate', authenticate);
 };
 

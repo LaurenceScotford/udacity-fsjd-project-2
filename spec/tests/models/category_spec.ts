@@ -2,7 +2,7 @@ import {Category, CategoryStore} from '../../../src/models/categories';
 
 const store = new CategoryStore();
 
-describe("Category Model", () => {
+describe('Category Model', () => {
     it('should have an index method', () => {
         expect(store.index).toBeDefined();
     });

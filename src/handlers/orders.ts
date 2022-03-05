@@ -29,7 +29,8 @@ const create = async (req: Request, res: Response) => {
         const order: Order = {
             id: '',
             user_id: req.body.user_id,
-            status: req.body.status
+            status: req.body.status,
+            products: req.body.products
         };
         const newOrder = await store.create(order);
         res.json(newOrder);
@@ -44,7 +45,8 @@ const update = async (req: Request, res: Response) => {
         const order: Order = {
             id: req.params.id,
             user_id: req.body.user_id,
-            status: req.body.status
+            status: req.body.status,
+            products: req.body.products
         }
         const updatedOrder = await store.update(order);
         res.json(updatedOrder);
@@ -64,12 +66,34 @@ const destroy = async (req: Request, res: Response) => {
     }
 }
 
+const currentOrder = async (req: Request, res: Response) => {
+    try {
+        const order = await store.currentOrder(req.params.id);
+        res.json(order);
+    } catch(err) {
+        res.status(500);
+        res.json(err);
+    }
+}
+
+const completedOrders = async (req: Request, res: Response) => {
+    try {
+        const orders = await store.completedOrders(req.params.id);
+        res.json(orders);
+    } catch(err) {
+        res.status(500);
+        res.json(err);
+    }
+}
+
 const orders_routes = (app: express.Application) => {
     app.get('/orders', index);
     app.get('/orders/:id', show);
-    app.post('/orders', verifyAuthToken, create);
-    app.put('/orders', verifyAuthToken, update);
-    app.delete('/orders', verifyAuthToken, destroy);
+    app.get('/open_order/:id', verifyAuthToken(0, 1, 'id'), currentOrder);
+    app.get('/completed_orders/:id', verifyAuthToken(0, 1, 'id'), completedOrders);
+    app.post('/orders', verifyAuthToken(0, 1, 'userid'), create);
+    app.put('/orders', verifyAuthToken(0, 1, 'userid'), update);
+    app.delete('/orders', verifyAuthToken(0, 1, 'userid'), destroy);
 };
 
 export default orders_routes;

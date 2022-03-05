@@ -95,6 +95,20 @@ export class ProductStore {
         }
     }
 
+    async productsByCategory(id: string): Promise<Product[]> {
+        try {
+            const sql = 'SELECT * FROM products WHERE category = ($1)';
+            const conn = await db.connect();
+            const result = await conn.query(sql, [id]);
+            conn.release();
+            let products = result.rows;
+            products = products.map(el => this.#priceToNum(el));
+            return products; 
+        } catch(err) {
+            throw new Error(`Could not get products for category_id: ${id}. Error: ${err}`)
+        }
+    }
+
     // Convert the price property to a numeric value so it can be used in math operations 
     #priceToNum(product: Product) {
         if (product) {

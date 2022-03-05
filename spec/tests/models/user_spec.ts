@@ -1,9 +1,9 @@
-import {User, UserStore} from '../../../src/models/users';
+import {UserStore} from '../../../src/models/users';
 
 const store = new UserStore();
 
 
-describe("User Model", () => {
+describe('User Model', () => {
     it('should have an index method', () => {
         expect(store.index).toBeDefined();
     });
@@ -27,6 +27,7 @@ describe("User Model", () => {
     it('should add a user when the create method is invoked', async () => {
         const result = await store.create({
             id: '',
+            auth_level: 1,
             first_name: 'John', 
             last_name: 'Wanamaker',
             username: 'jwanamaker',
@@ -34,6 +35,7 @@ describe("User Model", () => {
         });
         expect(result).toEqual({
             id: result.id,
+            auth_level: 1,
             first_name: 'John',
             last_name: 'Wanamaker',
             username: 'jwanamaker',
@@ -44,6 +46,7 @@ describe("User Model", () => {
     it('should return a list of users when the index method is invoked', async () => {
         await store.create({
             id: '',
+            auth_level: 1,
             first_name: 'Sam', 
             last_name: 'Walton',
             username: 'swalton',
@@ -56,6 +59,7 @@ describe("User Model", () => {
     it('should return the correct user when the show method is invoked', async () => {
         const result = await store.create({
             id: '',
+            auth_level: 1,
             first_name: 'Harry',
             last_name: 'Selfridge',
             username: 'hselfridge',
@@ -64,6 +68,7 @@ describe("User Model", () => {
         const test_data = await store.show(result.id);
         expect(test_data).toEqual({
             id: test_data.id,
+            auth_level: 1,
             first_name: 'Harry',
             last_name: 'Selfridge',
             username: 'hselfridge',
@@ -71,14 +76,16 @@ describe("User Model", () => {
         });
     });
 
-    it('should update the user first_name, last_name, username and password_digest when the update method is invoked', async () => {
+    it('should update the user auth_level, first_name, last_name, username, password_digest and rt when the update method is invoked', async () => {
         const newUser = await store.create({
             id: '',
+            auth_level: 2,
             first_name: 'Richard', 
             last_name: 'Sears',
             username: 'rsears',
             password: 'bnyteg974uhweu^hed6%R'
         });
+        newUser.auth_level = 1;
         newUser.first_name = 'Alvah';
         newUser.last_name = 'Roebuck';
         newUser.username = 'aroebuck';
@@ -86,6 +93,7 @@ describe("User Model", () => {
         const result = await store.update(newUser);
         expect(result).toEqual({
             id: result.id,
+            auth_level: 1,
             first_name: 'Alvah',
             last_name: 'Roebuck',
             username: 'aroebuck',
@@ -96,11 +104,13 @@ describe("User Model", () => {
     it('should update selective properties when the update method is invoked with not all properties present', async () => {
         const newUser = await store.create({
             id: '',
+            auth_level: 1,
             first_name: 'Frank', 
             last_name: 'Woolworth',
             username: 'fwoolworth',
             password: 'dasufh78945u87^^uighedw'
         });
+        newUser.auth_level = ''; 
         newUser.first_name = '';
         newUser.last_name = '';
         newUser.username = 'frankw';
@@ -108,6 +118,7 @@ describe("User Model", () => {
         const result = await store.update(newUser);
         expect(result).toEqual({
             id: result.id,
+            auth_level: 1,
             first_name: 'Frank',
             last_name: 'Woolworth',
             username: 'frankw',
@@ -118,6 +129,7 @@ describe("User Model", () => {
     it('should remove the user when the delete method is invoked', async () => {
         const newUser = await store.create({
             id: '',
+            auth_level: 1,
             first_name: 'Sebastian', 
             last_name: 'Kresge',
             username: 'skresge',
@@ -127,6 +139,7 @@ describe("User Model", () => {
         const deletedUser = await store.delete(id);
         expect(deletedUser).toEqual({
             id: id,
+            auth_level: 1,
             first_name: 'Sebastian', 
             last_name: 'Kresge',
             username: 'skresge', 
