@@ -7,6 +7,14 @@ export type Product = {
     category: string; 
 };
 
+export type TopProduct = {
+    id: string;
+    name: string;
+    price: number | string;
+    category: string; 
+    quantity: number;
+}
+
 export class ProductStore {
     async index(): Promise<Product[]> {
         try {
@@ -106,6 +114,57 @@ export class ProductStore {
             return products; 
         } catch(err) {
             throw new Error(`Could not get products for category_id: ${id}. Error: ${err}`)
+        }
+    }
+
+    async topProducts(numToShow: number): Promise<Product[]> {
+        try {
+            // Get a list of products sold and quantities
+            const conn = await db.connect();
+            const listSql = 'SELECT product_id, quantity FROM order_products WHERE order_id IN (SELECT id AS order_id FROM orders WHERE status = \'complete\')';
+            const result = await conn.query(listSql);
+            const products: {[key: string]: number} = {};
+            for (let i = 0; i < result.rows.length; i++) {
+                const id = result.rows[i].product_id;
+                const quantity = result.rows[i].quantity;
+                // If a product has already been added, update the quantity ...
+                if (products[id]) {
+                    products[id] += quantity;
+                } else {
+                    // ... otherwise create a new entry with an initial quantity
+                    products[id] = quantity;
+                }
+            }
+
+            // Sort the products by quantity
+            const sortList: {id: string, quantity: number}[] = [];
+            for (let product in products) {
+                sortList.push({id: product, quantity: products[product]});
+            }
+
+            sortList.sort((a, b) => {
+                return Math.sign(a.quantity - b.quantity);
+            });
+
+            // Now get a list of products and quantities
+            const topList: TopProduct[] = []
+            for (let i = 0; i < (sortList.length < numToShow ? sortList.length : numToShow); i++) {
+                const sql = 'SELECT * FROM products WHERE id = ($1)';
+                const result = await conn.query(sql,[sortList[i].id]);
+                const prod = result.rows[0];
+                topList.push({
+                    id: prod.id,
+                    name: prod.name,
+                    price: prod.price,
+                    category: prod.category, 
+                    quantity: sortList[i].quantity
+                });
+            }
+
+            conn.release();
+            return topList;
+        } catch(err) {
+            throw new Error(`Could not get the list of top products. Err${err}`);
         }
     }
 

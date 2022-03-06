@@ -18,7 +18,7 @@ export type User = {
 };
 
 export class UserStore {
-    async index(): Promise<User[]> {
+    async index(auth_level: string | number): Promise<User[]> {
         try {
             const conn = await db.connect();
             const sql = 'SELECT id, auth_level, first_name, last_name, username FROM users WHERE auth_level != ($1)';
@@ -26,13 +26,14 @@ export class UserStore {
             conn.release();
             let users = result.rows;
             users = users.map(el => {return {id: el.id, auth_level: el.auth_level, first_name: el.first_name, last_name: el.last_name, username: el.username, password: ''}});
+            users = users.filter(el => parseInt(el.auth_level) <= parseInt(auth_level as string));
             return users; 
         } catch (err) {
             throw new Error(`Could not get users. Error: ${err}`);
         }
     }
 
-    async show(id: string): Promise<User> {
+    async show(id: string, auth_level: string | number): Promise<User> {
         try {
             const sql = 'SELECT id, auth_level, first_name, last_name, username FROM users WHERE id = ($1) AND auth_level != ($2)';
             const conn = await db.connect();
@@ -41,6 +42,10 @@ export class UserStore {
             const user = result.rows[0];
             if (user) {
                 user.password = '';
+
+                if (parseInt(user.auth_level) <= parseInt(auth_level as string)) {
+                    throw new Error('You are not authorised to view this user.')
+                }
             }
             return user;
         } catch (err) {
@@ -69,73 +74,89 @@ export class UserStore {
         }
     }
 
-    async update(user: User): Promise<User> {
+    async update(user: User, auth_level: string | number): Promise<User> {
         const userTypes: string[] = ['user', 'admin', 'super'];
 
         try {
             // Check that this is not an attempt to update the superuser
             if (await this.#isSuperuser(user.id)) {
-                throw new Error('Updates to this user are not authorised');
-            } else {
-                // Scan parameter for properties to be updated
-                let argCount = 1;
-                let argList = [];
-                let sql = 'UPDATE users SET';
-                type argType = 'auth_level' | 'first_name' | 'last_name' | 'username';
-                let args: argType[] = ['auth_level' , 'first_name', 'last_name', 'username'];
-                for (let i = 0; i < args.length; i++) {
-                    const prop: argType = args[i];
-                    if(user[prop]) {
-                        sql += (argCount > 1 ? ', ' : ' ');
-                        sql += `${prop} = ($${argCount++})`;
-                        argList.push(user[prop]);
-                    }
-                }
-          
-                // If password is being updated, create a hash from the password
-                if (user.password) {
-                    const hash = this.#hashPassword(user.password);
-                    sql += (argCount > 1 ? ', ' : ' ');
-                    sql += `password_digest = ($${argCount++})`;
-                    argList.push(hash);
-                }
+                throw new Error('Updates to this user are not authorised.');
+            }
 
-                // If at least one property has been updated, do the update
-                if (argList.length) {
-                    argList.push(user.id);
-                    sql += ` WHERE id = ($${argCount}) RETURNING *`;
-                    const conn = await db.connect();
-            
-                    const result = await conn.query(sql, argList);
-                    const updatedUser = result.rows[0];
-                    delete updatedUser.password_digest;
-                    updatedUser.password = '';
-                    conn.release();
-                    return updatedUser;
-                } else {
-                    throw new Error('No properties were passed in to update');
+            // Check for attempt to modify a user at a higher authorisation level
+            const conn = await db.connect();
+            const checkSql = 'SELECT auth_level FROM users WHERE id = ($1)';
+            const result =  await conn.query(checkSql, [user.id]);
+            if (parseInt(result.rows[0].auth_level) > parseInt(auth_level as string)) {
+                throw new Error('You are not authorised to modify this user.');
+            }
+
+            // Scan parameter for properties to be updated
+            let argCount = 1;
+            let argList = [];
+            let sql = 'UPDATE users SET';
+            type argType = 'auth_level' | 'first_name' | 'last_name' | 'username';
+            let args: argType[] = ['auth_level' , 'first_name', 'last_name', 'username'];
+            for (let i = 0; i < args.length; i++) {
+                const prop: argType = args[i];
+                if(user[prop]) {
+                    sql += (argCount > 1 ? ', ' : ' ');
+                    sql += `${prop} = ($${argCount++})`;
+                    argList.push(user[prop]);
                 }
+            }
+        
+            // If password is being updated, create a hash from the password
+            if (user.password) {
+                const hash = this.#hashPassword(user.password);
+                sql += (argCount > 1 ? ', ' : ' ');
+                sql += `password_digest = ($${argCount++})`;
+                argList.push(hash);
+            }
+
+            // If at least one property has been updated, do the update
+            if (argList.length) {
+                argList.push(user.id);
+                sql += ` WHERE id = ($${argCount}) RETURNING *`;
+                const conn = await db.connect();
+        
+                const result = await conn.query(sql, argList);
+                const updatedUser = result.rows[0];
+                delete updatedUser.password_digest;
+                updatedUser.password = '';
+                conn.release();
+                return updatedUser;
+            } else {
+                throw new Error('No properties were passed in to update');
             }
         } catch (err) {
             throw new Error(`Could not update user ${user.username}. Error: ${err}`);
         }
     }
 
-    async delete(id: string): Promise<User> {
+    async delete(id: string, auth_level: string): Promise<User> {
         try {
             // Check that this is not an attempt to delete the superuser
             if (await this.#isSuperuser(id)) {
                 throw new Error('Deletion of this user is not authorised');
-            } else {
-                const sql = 'DELETE FROM users WHERE id=($1) RETURNING *';
-                const conn = await db.connect();
-                const result = await conn.query(sql, [id]);
-                const user = result.rows[0];
-                delete user.password_digest;
-                user.password = '';
-                conn.release();
-                return user;
             }
+
+            // Check for attempt to delete a user at a higher authorisation level
+            const conn = await db.connect();
+            const checkSql = 'SELECT auth_level FROM users WHERE id = ($1)';
+            const chkResult =  await conn.query(checkSql, [id]);
+            if (parseInt(chkResult.rows[0].auth_level) > parseInt(auth_level as string)) {
+                throw new Error('You are not authorised to delete this user.');
+            }
+
+            const sql = 'DELETE FROM users WHERE id=($1) RETURNING *';
+            const result = await conn.query(sql, [id]);
+            const user = result.rows[0];
+            delete user.password_digest;
+            user.password = '';
+            conn.release();
+            return user;
+            
         } catch (err) {
             throw new Error(`Could not delete user ${id}. Error: ${err}`);
         }

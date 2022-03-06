@@ -14,7 +14,7 @@ export type Order = {
 
 export class OrderStore {
     
-    async index(): Promise<Order[]> {
+    async index(user_id: string | null): Promise<Order[]> {
         try {
             const conn = await db.connect();
             const sql = 'SELECT * FROM orders';
@@ -22,12 +22,15 @@ export class OrderStore {
             conn.release();
             let orders: Order[] = [];
             for (let i = 0; i < result.rows.length; i++) {
-                orders[i] = {
-                    id: result.rows[i].id,
-                    user_id: result.rows[i].user_id,
-                    status: result.rows[i].status,
-                    products: await this.#getProductList(result.rows[i].id)
-                }
+                // If we're listing orders for a specific user, filter out orders that are not owned by that user
+                if (!user_id || user_id == result.rows[i].user_id) {
+                    orders[i] = {
+                        id: result.rows[i].id,
+                        user_id: result.rows[i].user_id,
+                        status: result.rows[i].status,
+                        products: await this.#getProductList(result.rows[i].id)
+                    }
+                } 
             } 
             return orders; 
         } catch (err) {

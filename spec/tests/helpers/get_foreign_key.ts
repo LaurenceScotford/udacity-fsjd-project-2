@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import {CategoryStore} from '../../../src/models/categories';
 import {UserStore} from '../../../src/models/users';
 import {ProductStore} from '../../../src/models/products';
+import {OrderStore} from '../../../src/models/orders';
 
 // Creates a valid foreign key of the requested type. Only the top-level object need be requested - if that object has further
 // foreign key dependencies, these will be created automatically
@@ -63,14 +64,30 @@ async function getForeignKey(type: string) : Promise<string> {
 
                 // Return the requested foreign key
                 return newProduct.id.toString();
+            case 'order':
+                const orderStore = new OrderStore();
+                const productId = await getForeignKey('product');
+                const userId = await getForeignKey('user');
+                const newOrder = await orderStore.create({
+                    id: '',
+                    user_id: userId,
+                    status: 'complete',
+                    products: [{
+                        product_id: productId,
+                        quantity: 5
+                    }]
+                });
+                return newOrder.id.toString();
             default:
                 throw new Error ('Foreign key table not recognised');
+            
         }
     } catch (err) {
         throw new Error(`Could not create foreign key of type ${type}. Error: ${err}`)
     }
 }
 
+// Get a random sting of hex digits
 function getRandomString() {
     const length = 20;
     return crypto.randomBytes(length)

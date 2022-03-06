@@ -25,6 +25,14 @@ describe('Product Model', () => {
         expect(store.delete).toBeDefined();
     });
 
+    it('should have a productsByCategory method', () => {
+        expect(store.productsByCategory).toBeDefined();
+    });
+
+    it('should have a topProducts method', () => {
+        expect(store.topProducts).toBeDefined();
+    });
+
     it('should add a product when the create method is invoked', async () => {
         const catId = await getForeignKey('category');
         const result = await store.create({
@@ -109,5 +117,42 @@ describe('Product Model', () => {
         });
         const result = await store.show(id);
         expect(result).toBeUndefined();
+    });
+
+    it('should show all the products in a category when the productsByCategory method is invoked', async () => {
+        const catId = await getForeignKey('category');
+        const newProd = await store.create({
+            id: '',
+            name: 'Smart Phone', 
+            price: 399.95, 
+            category: catId
+        });
+        const newProd2 = await store.create({
+            id: '',
+            name: 'Tablet Computer', 
+            price: 299.95, 
+            category: catId
+        });
+        const productsByCategory = await store.productsByCategory(catId);
+        expect(productsByCategory).toEqual([
+            {
+                id: newProd.id,
+                name: 'Smart Phone', 
+                price: 399.95, 
+                category: catId
+            },
+            {
+                id: newProd2.id,
+                name: 'Tablet Computer', 
+                price: 299.95, 
+                category: catId
+            }
+        ]);
+    });
+
+    it('should show up to x top products when the topProducts(x) method is invoked', async () => {
+        await getForeignKey('order');
+        const topProducts = await store.topProducts(1);
+        expect(topProducts).not.toBe([]);
     });
 });

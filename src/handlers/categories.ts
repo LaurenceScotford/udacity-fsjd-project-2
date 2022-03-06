@@ -65,9 +65,9 @@ const destroy = async (req: Request, res: Response) => {
 const categories_routes = (app: express.Application) => {
     app.get('/categories', index);
     app.get('/categories/:id', show);
-    app.post('/categories', verifyAuthToken, create);
-    app.put('/categories/:id', verifyAuthToken, update);
-    app.delete('/categories/:id', verifyAuthToken, destroy);
+    app.post('/categories', verifyAuthToken(2, 2, null), create);
+    app.put('/categories/:id', verifyAuthToken(2, 2, null), update);
+    app.delete('/categories/:id', verifyAuthToken(2, 2, null), destroy);
 };
 
 export default categories_routes;

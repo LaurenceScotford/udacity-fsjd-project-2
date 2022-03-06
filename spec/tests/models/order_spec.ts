@@ -65,7 +65,7 @@ describe('Order Model', () => {
                 {product_id: productId, quantity: 1}
             ]
         });
-        const result = await store.index();
+        const result = await store.index(null);
         expect(result).not.toBe([]);
     });
 
