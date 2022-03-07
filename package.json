@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "start": "npm-run-all -s migrate-up tsc app",
+    "start": "npm-run-all -s migrate-up tsc copy-files app",
     "watch": "npm-run-all -s migrate-up dev",
     "test": "cross-env ENV=test npm-run-all -s migrate-test-up jasmine-tests migrate-test-down --continue-on-error",
     "tsc": "tsc",
@@ -14,13 +14,14 @@
     "migrate-up": "db-migrate up --env dev",
     "migrate-down": "db-migrate reset --env dev",
     "migrate-test-down": "db-migrate reset --env test",
-    "migrate-test-up": "db-migrate up --env test"
+    "migrate-test-up": "db-migrate up --env test",
+    "copy-files": "copyfiles -u 1 src/public/** dist"
   },
   "author": "Udacity",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/LaurenceScotford/udacity-fsjd-project-2.git"
-    },
+    "type": "git",
+    "url": "https://github.com/LaurenceScotford/udacity-fsjd-project-2.git"
+  },
   "license": "ISC",
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@types/jasmine": "^3.6.3",
+    "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
     "jasmine": "^3.6.4",
     "jasmine-spec-reporter": "^6.0.0",

@@ -18,9 +18,7 @@ const address = `${API_HOST}:${API_PORT}`;
 
 app.use(express.json());
 
-app.get('/', function (req: Request, res: Response) {
-    res.send('Hello World!')
-});
+app.use(express.static(__dirname + '/public'));
 
 categories_routes(app);
 products_routes(app);

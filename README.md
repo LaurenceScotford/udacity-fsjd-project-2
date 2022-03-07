@@ -54,7 +54,7 @@ NOTE: You can see a copy of these usage instructions by visiting the root of the
 The API supports the following operations:
 
 
-### User-related operations ###
+### User operations ###
 
 | Operation | Description |
 | --- | --- |
@@ -67,7 +67,7 @@ The API supports the following operations:
 | Authenticate user | This should be used as part of a login process to verify a user. This operation is required before many other operations can be carried out. |
 
 
-### Category related operations ###
+### Category operations ###
 
 | Operation | Description |
 | --- | --- |
@@ -78,7 +78,7 @@ The API supports the following operations:
 | Destroy category | This enables a product category to be permanantly removed. This operation will fail if any products exist that are in that category. This operation is only available to admin users | 
 
 
-### Product related operations ###
+### Product operations ###
 
 | Operation | Description |
 | --- | --- |
@@ -91,7 +91,7 @@ The API supports the following operations:
 | TopProducts(x) | This lists up to x top selling products. Products in active orders are not counted when this list is created. |
 
 
-### Order related operations ###
+### Order operations ###
 
 | Operation | Description |
 | --- | --- |
@@ -105,7 +105,7 @@ The API supports the following operations:
 ### Routes
 To use the API, append the URL with a route to one of the following endpoints:
 
-| Task | HTTP verb | URL | Authentication required | Body | Returns |
+| Operation | HTTP verb | Endpoint | Authentication required | Body | Returns |
 | --- | --- | --- | --- | --- | --- |
 | Register user | POST | `/users/register` | No | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created user |
 | Create user | POST | `/users` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created user |

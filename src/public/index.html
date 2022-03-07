@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/storeAPI.css">
+    <title>Store API</title>
+</head>
+<body>
+    <h1>Store API</h1>
+    <section>
+        <h2>About</h2>
+        <p>This is a web API to provide backend functionality for an online storefront. It runs on node.js and express using a postgres database.</p>
+        <p>The following models are supported:</p>
+        <p><strong>Users</strong> - A list of valid users for the database.</p>
+        <table>
+            <thead>
+                <tr><th>Field</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>id</td><td>A unique id representing this user</td></tr>
+                <tr><td>auth_level</td><td>An integer value (1 or above) representing the authorisation level of this user (see Authorisation description below)</td></tr>
+                <tr><td>first_name</td><td>The actual first name of the user</td></tr>
+                <tr><td>last_name</td><td>The actual last name of the user</td></tr>
+                <tr><td>username</td><td>A unique identifier for the user - also used to access the account</td></tr>
+                <tr><td>password</td><td>The password used to access the user's account</td></tr>
+            </tbody>
+        </table>
+        <p><strong>Categories</strong> - A list of valid users for the database.</p>
+        <table>
+            <thead>
+                <tr><th>Field</th><th>A list of categories for types of product sold</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>id</td><td>A unique id representing this category</td></tr>
+                <tr><td>category</td><td>The name of the category (this must also be unique)</td></tr>
+            </tbody>
+        </table>
+        <p><strong>Products</strong> - A list of products for sale.</p>
+        <table>
+            <thead>
+                <tr><th>Field</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>id</td><td>A unique id representing this product</td></tr>
+                <tr><td>name</td><td>A name describing the product</td></tr>
+                <tr><td>price</td><td>A numeric price for the product</td></tr>
+                <tr><td>category</td><td>The id of the category this product belongs to</td></tr>
+            </tbody>
+        </table>
+        <p><strong>Orders</strong> - A list of customer orders.</p>
+        <table>
+            <thead>
+                <tr><th>Field</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>id</td><td>A unique id representing this order</td></tr>
+                <tr><td>user_id</td><td>The id of the user the order belongs to</td></tr>
+                <tr><td>status</td><td>Either 'active' if the order is current and not yet fulfilled or 'complete' if the order has been fulfilled. Any user can only ever have either 0 or 1 active orders.</td></tr>
+                <tr><td>products</td><td>A list of products included in the order. Each product has two fields: product_id - the id of the product being ordered, and quantity - how many of that product are being ordered</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section>
+        <h2>Using the API</h2>
+        <p>The API supports the following operations:</p>
+        <h3>User operations</h3>
+        <table>
+            <thead>
+                <tr><th>Operation</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Register user</td><td>This is for creation of non-administrative users, e.g. customers. This operation does not require authorisation, so can be used for self-service registration.</td></tr>
+                <tr><td>Create user</td><td>This is a generalised operation for creation of users and it requires authorisation. This operation can be used for creating admin users, for example. A user can only create other users up to and including their own level of authorisation.</td></tr>
+                <tr><td>Index users</td><td>This lists all users on the system. It is only accessible to admin users.</td></tr>
+                <tr><td>Show user</td><td>This shows a single user. Non-admin users can only access their own record.</td></tr>
+                <tr><td>Update user</td><td>This enables an existing user record to be updated. Non-admin users can only update their own record.</td></tr>
+                <tr><td>Destroy user</td><td>This enables a user record to be permanantly removed. Non-admin users can only destroy their own record. This operation will fail if there are any orders belonging to this user</td></tr>
+                <tr><td>Authenticate user</td><td>This should be used as part of a login process to verify a user. This operation is required before many other operations can be carried out.</td></tr>
+            </tbody>
+        </table>
+        <h3>Category operations</h3>
+        <table>
+            <thead>
+                <tr><th>Operation</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Create category</td><td>This creates a new product category. This operation is only available to admin users.</td></tr>
+                <tr><td>Index categories</td><td>This lists all product categories.</td></tr>
+                <tr><td>Show category</td><td>This shows a single product category.</td></tr>
+                <tr><td>Update category</td><td>This enables an existing product category to be updated. This operation is only available to admin users.</td></tr>
+                <tr><td>Destroy category</td><td>This enables a product category to be permanantly removed. This operation will fail if any products exist that are in that category. This operation is only available to admin users</td></tr>
+            </tbody>
+        </table>
+        <h3>Product operations</h3>
+        <table>
+            <thead>
+                <tr><th>Operation</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Create product</td><td>This creates a new product. This operation is only available to admin users.</td></tr>
+                <tr><td>Index products</td><td>This lists all products.</td></tr>
+                <tr><td>Show product</td><td>This shows a single product.</td></tr>
+                <tr><td>Update products</td><td>This enables an existing product to be updated. This operation is only available to admin users.</td></tr>
+                <tr><td>Destroy product</td><td>This enables a product to be permanantly removed. This operation will fail if any orders exist that contain that product. This operation is only available to admin users.</td></tr>
+                <tr><td>Products by category</td><td>This lists all products in a given category.</td></tr>
+                <tr><td>TopProducts(x)</td><td>This lists up to x top selling products. Products in active orders are not counted when this list is created.</td></tr>
+            </tbody>
+        </table>
+        <h3>Order operations</h3>
+        <table>
+            <thead>
+                <tr><th>Operation</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Create order</td><td>This creates a new order.</td></tr>
+                <tr><td>Index orders</td><td>This lists all orders. Non-admin users will only see their own orders.</td></tr>
+                <tr><td>Show order</td><td>This shows a single product. Non-admin users can view their own orders only.</td></tr>
+                <tr><td>Update orders</td><td>This enables an existing order to be updated. Non-admin users can update their own orders only.</td></tr>
+                <tr><td>Destroy order</td><td>This enables an order to be permanantly removed. Non-admin users can destroy their own orders only.</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section>
+        <h2>Routes</h2>
+        <p>To use the API, append the URL with a route to one of the following endpoints:</p>
+        <table>
+            <thead>
+                <tr><th class="narrow">Operation</th><th class="narrow">HTTP verb</th><th class="medium">Endpoint</th><th class="narrow">Auth. required</th><th class="wide">Body</th><th class="wide">Returns</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="narrow">Register user</td><td class="narrow">POST</td><td class="medium">/users/register</td><td class="narrow">No</td><td class="wide">JSON object with values. id can be set to an empty string as it will be created automatically</td><td class="wide">JSON file with the created user</td></tr>
+                <tr><td>Create user</td><td>POST</td><td>/users</td><td>Yes</td><td>JSON object with values. id can be set to an empty string as it will be created automatically</td><td>JSON file with the created user</td></tr>
+                <tr><td>Index users</td><td>GET</td><td>/users</td><td>Yes</td><td>None</td><td>JSON file with array of users</td></tr>
+                <tr><td>Show user</td><td>GET</td><td>/users/:id</td><td>Yes</td><td>None</td><td>JSON file with selected user</td></tr>
+                <tr><td>Update user</td><td>PUT</td><td>/users/:id</td><td>Yes</td><td>JSON object containing properties to be amended with new values (any properties not included will be left unchanged)</td><td>JSON file with the updated user</td></tr>
+                <tr><td>Destroy user</td><td>DELETE</td><td>/users/:id</td><td>Yes</td><td>None</td><td>JSON file with the deleted user</td></tr>
+                <tr><td>Authenticate user</td><td>POST</td><td>/users/authenticate</td><td>No</td><td>JSON object containing the following properties: username: user name for the user to be logged in; password: password for the user to be logged in</td><td>JSON file with a token for the authenticated user.</td></tr>
+                <tr><td>Create category</td><td>POST</td><td>/categories</td><td>Yes</td><td>JSON object with values. id can be set to an empty string as it will be created automatically</td><td>JSON file with the created category</td></tr>
+                <tr><td>Index categories</td><td>GET</td><td>/categories</td><td>No</td><td>None</td><td>JSON file with array of categories</td></tr>
+                <tr><td>Show category</td><td>GET</td><td>/categories/:id</td><td>No</td><td>None</td><td>JSON file with selected category</td></tr>
+                <tr><td>Update categories</td><td>PUT</td><td>/categories/:id</td><td>Yes</td><td>JSON object containing property to be amended with new value</td><td>JSON file with the updated category</td></tr>
+                <tr><td>Destroy category</td><td>DELETE</td><td>/categories/:id</td><td>Yes</td><td>None</td><td>JSON file with the deleted category</td></tr>
+                <tr><td>Create product</td><td>POST</td><td>/products</td><td>Yes</td><td>JSON object with values. id can be set to an empty string as it will be created automatically</td><td>JSON file with the created product</td></tr>
+                <tr><td>Index products</td><td>GET</td><td>/products</td><td>No</td><td>None</td><td>JSON file with array of products</td></tr>
+                <tr><td>Show product</td><td>GET</td><td>/products/:id</td><td>No</td><td>None</td><td>JSON file with selected product</td></tr>
+                <tr><td>Update product</td><td>PUT</td><td>/products/:id</td><td>Yes</td><td>JSON object containing properties to be amended with new values (any properties not included will be left unchanged)</td><td>JSON file with the updated product</td></tr>
+                <tr><td>Destroy product</td><td>DELETE</td><td>/products/:id</td><td>Yes</td><td>None</td><td>JSON file with the deleted product</td></tr>
+                <tr><td>Products by category</td><td>GET</td><td>/products_in_category/:id</td><td>No</td><td>None</td><td>JSON file with a list of products in the given category</td></tr>
+                <tr><td>Top Products</td><td>GET</td><td>/top_products/:max</td><td>No</td><td>None</td><td>JSON file with an array of up to max top selling products</td></tr>
+                <tr><td>Create order</td><td>POST</td><td>/orders</td><td>Yes</td><td>JSON object with values. id can be set to an empty string as it will be created automatically</td><td>JSON file with the created order (see below)</td></tr>
+                <tr><td>Index orders</td><td>GET</td><td>/orders</td><td>Yes</td><td>None</td><td>JSON file with array of orders</td></tr>
+                <tr><td>Show order</td><td>GET</td><td>/orders/:id</td><td>Yes</td><td>None</td><td>JSON file with selected order</td></tr>
+                <tr><td>Update order</td><td>PUT</td><td>/orders/:id</td><td>Yes</td><td>JSON object containing properties to be amended with new values (any properties not included will be left unchanged)</td><td>JSON file with the updated order</td></tr>
+                <tr><td>Delete order</td><td>DELETE</td><td>/orders/:id</td><td>Yes</td><td>None</td><td>JSON file with the deleted order</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section>
+        <h2>Authorisation</h2>
+        <p>The system works on the principle that each user has an authorisation level. The minimum authorisation level is 1 and higher levels can be any integer value above this. There are three levels of authorisation:</p>
+        <ol>
+            <li>End user - this level is intended to represent customers. They have access to all operations required for creating and maintaining their user account and for making and modifying orders.</li>
+            <li>Admin user - this level is intended to represent administrative users. They have access to all operations and can access data not directly associated with their user account.</li>
+            <li>Super user - this is a permanant user. Only one super user account exists and it is created automatically when the application begins. The presence of the super user account ensures that the full REST api can always be accessed, even if no other user accounts exist. When the application is first started after an install, you will want to authorise the super user account and use this to create any admin level user accounts that are initially required. NOTE: Creation fo additional super user accounts or modification/deletion of the existing super user account is not permitted within the API.</li>
+        </ol>
+        <p>A few operations, e.g. viewing products or product categories, can be accessed with authorisation. Most operations require a user to be authenticated before they can be accessed. Use the Authenticate route to authenticate a user. If the user is valid, this route will return a secure web token. This token must be sent in the Authorization header with any operation that requires authorisation.</p>
+        <p>For operations that require authorisation, there are potentially two levels of access:</p>
+        <ul>
+            <li>Own records: The user can only access records that are owned by them, e.g. their user account and their orders. Customers are generally confined to this level of access.</li>
+            <li>Universal access: The user can access any records. This level of access is generally assigned only to administrative users.</li>
+        </ul>
+    </section>
+    <section>
+        <h2>A note on password security</h2>
+        <p>Passwords are stored in an encrypted form in the database. The API will never return password data, therefore, when a user record is requested, the password property is always blank. One possible method for handling lost passwords, given this configuration, is for an admin user to modify the user record with a temporary password and then for the user to change this after successful login.</p>
+    </section>
+</body>
+</html>

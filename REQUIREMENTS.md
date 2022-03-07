@@ -51,6 +51,26 @@ These are the notes from a meeting with the frontend developer that describe wha
 
 ## Implementation
 
+### Enhancements to base requirements
+- All optional features implemented
+- Top 5 products endpoint is now top (x) products - allowing any quantity to be displayed
+- Update route added for products
+- Destroy route added for products
+- Update route added for users
+- Destroy route added for users
+- Register route added for users
+- Authenticate route added for users
+- Create route added for orders
+- Index route added for orders
+- Show route added for orders
+- Update route added for orders
+- Destroy route added for orders
+- Categories data shape added with properties: id - unique id; category - name of category
+- Additional properties for User data shape: username - unique, human readable username; auth_level - number indicating authorisation level
+- jwt token payload now includes authorisation level so that operations can also be restricted based on a user's authorisation level as well as presence of the token
+- Permanent super user to ensure access to all routes of the API is always possible
+
+
 ### Models
 
 **Users** - A list of valid users for the database.
@@ -136,7 +156,7 @@ These are the notes from a meeting with the frontend developer that describe wha
 ### Routes
 To use the API, append the URL with a route to one of the following endpoints:
 
-| Task | HTTP verb | URL | Authentication required | Body | Returns |
+| Operation | HTTP verb | Endpoint | Authentication required | Body | Returns |
 | --- | --- | --- | --- | --- | --- |
 | Register user | POST | `/users/register` | No | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created user |
 | Create user | POST | `/users` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created user |
