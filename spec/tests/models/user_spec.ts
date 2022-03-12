@@ -1,4 +1,11 @@
+import dotenv from 'dotenv';
 import {UserStore} from '../../../src/models/users';
+
+dotenv.config();
+
+const {
+    SUPERUSER_AUTHLEVEL
+} = process.env;
 
 const store = new UserStore();
 
@@ -52,7 +59,7 @@ describe('User Model', () => {
             username: 'swalton',
             password: 'jioed8u43%*&okop'
         });
-        const result = await store.index();
+        const result = await store.index(SUPERUSER_AUTHLEVEL as string);
         expect(result).not.toBe([]);
     });
 
@@ -65,7 +72,7 @@ describe('User Model', () => {
             username: 'hselfridge',
             password: 'nyasrfuh8997%^$dfnweh'
         });
-        const test_data = await store.show(result.id);
+        const test_data = await store.show(result.id, SUPERUSER_AUTHLEVEL as string);
         expect(test_data).toEqual({
             id: test_data.id,
             auth_level: 1,
@@ -90,7 +97,7 @@ describe('User Model', () => {
         newUser.last_name = 'Roebuck';
         newUser.username = 'aroebuck';
         newUser.password = 'njxczvyur897u^%R$Rhbdfs67*&';
-        const result = await store.update(newUser);
+        const result = await store.update(newUser, SUPERUSER_AUTHLEVEL as string);
         expect(result).toEqual({
             id: result.id,
             auth_level: 1,
@@ -115,7 +122,7 @@ describe('User Model', () => {
         newUser.last_name = '';
         newUser.username = 'frankw';
         newUser.password = '';
-        const result = await store.update(newUser);
+        const result = await store.update(newUser, SUPERUSER_AUTHLEVEL as string);
         expect(result).toEqual({
             id: result.id,
             auth_level: 1,
@@ -136,7 +143,7 @@ describe('User Model', () => {
             password: 'ndsa79342de8d3(*&^iwuehd'
         });
         const id = newUser.id;
-        const deletedUser = await store.delete(id);
+        const deletedUser = await store.delete(id, SUPERUSER_AUTHLEVEL as string);
         expect(deletedUser).toEqual({
             id: id,
             auth_level: 1,
@@ -145,7 +152,7 @@ describe('User Model', () => {
             username: 'skresge', 
             password: ''
         });
-        const result = await store.show(id);
+        const result = await store.show(id, SUPERUSER_AUTHLEVEL as string);
         expect(result).toBeUndefined();
     });
 });

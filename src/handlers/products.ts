@@ -10,7 +10,7 @@ const index = async (_req: Request, res: Response) => {
         res.json(result);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -20,7 +20,7 @@ const show = async (req: Request, res: Response) => {
         res.json(result);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -36,7 +36,7 @@ const create = async (req: Request, res: Response) => {
         res.json(newProduct);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }  
 };
 
@@ -52,7 +52,7 @@ const update = async (req: Request, res: Response) => {
         res.json(updatedProduct);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -62,7 +62,7 @@ const destroy = async (req: Request, res: Response) => {
         res.json(deletedProduct);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 }
 
@@ -72,7 +72,17 @@ const productsInCategory = async (req: Request, res: Response) => {
         res.json(products);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
+    }
+}
+
+const topProducts = async (req: Request, res: Response) => {
+    try {
+        const products = await store.topProducts(req.params.max);
+        res.json(products);
+    } catch(err) {
+        res.status(400);
+        res.send(String(err));
     }
 }
 
@@ -80,6 +90,7 @@ const productsInCategory = async (req: Request, res: Response) => {
 const products_routes = (app: express.Application) => {
     app.get('/products', index);
     app.get('/products_in_category/:id', productsInCategory);
+    app.get('/top_products/:max', topProducts);
     app.get('/products/:id', show);
     app.post('/products', verifyAuthToken(2, 2, null), create);
     app.put('/products/:id', verifyAuthToken(2, 2, null), update);

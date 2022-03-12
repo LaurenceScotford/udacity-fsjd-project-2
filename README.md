@@ -12,8 +12,8 @@ The following models are supported:
 
 | Field | Description |
 | ----- | ----------- |
-| id | A unique id representing this user |
-| auth_level | An integer value (1 or above) representing the authorisation level of this user (see Authorisation description below)
+| id | A unique id representing this user (should be omitted during user creation, as it will be created automatically) |
+| auth_level | An integer value (1 or above) representing the authorisation level of this user (see Authorisation description below). Note this field is not required for the register route as it will be created automatically 
 | first_name | The actual first name of the user |
 | last_name | The actual last name of the user |
 | username | A unique identifier for the user - also used to access the account |
@@ -24,7 +24,7 @@ The following models are supported:
 
 | Field | Description |
 | ----- | ----------- |
-| id | A unique id representing this category |
+| id | A unique id representing this category (should be omitted during category creation, as it will be created automatically) |
 | category | The name of the category (this must also be unique) |
 
 
@@ -32,7 +32,7 @@ The following models are supported:
 
 | Field | Description |
 | ----- | ----------- |
-| id | A unique id representing this product |
+| id | A unique id representing this product (should be omitted during product creation, as it will be created automatically) |
 | name | A name describing the product |
 | price | A numeric price for the product |
 | category | The id of the category this product belongs to |
@@ -42,7 +42,7 @@ The following models are supported:
 
 | Field | Description |
 | ----- | ----------- |
-| id | A unique id representing this order |
+| id | A unique id representing this order (should be omitted during order creation, as it will be created automatically) |
 | user_id | The id of the user the order belongs to |
 | status | Either 'active' if the order is current and not yet fulfilled or 'complete' if the order has been fulfilled. Any user can only ever have either 0 or 1 active orders. |
 | products | A list of products included in the order. Each product has two fields: product_id - the id of the product being ordered, and quantity - how many of that product are being ordered |
@@ -107,31 +107,43 @@ To use the API, append the URL with a route to one of the following endpoints:
 
 | Operation | HTTP verb | Endpoint | Authentication required | Body | Returns |
 | --- | --- | --- | --- | --- | --- |
-| Register user | POST | `/users/register` | No | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created user |
-| Create user | POST | `/users` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created user |
+| Register user | POST | `/users/register` | No | JSON object with required properties. | JSON file with the created user |
+| Create user | POST | `/users` | Yes | JSON object with required properties. | JSON file with the created user |
 | Index users | GET | `/users` | Yes | None | JSON file with array of users |
 | Show user | GET | `/users/:id` | Yes | None | JSON file with selected user |
 | Update user | PUT | `/users/:id` | Yes | JSON object containing properties to be amended with new values (any properties not included will be left unchanged) | JSON file with the updated user |
 | Destroy user | DELETE | `/users/:id` | Yes | None | JSON file with the deleted user |
 | Authenticate user | POST | `/users/authenticate` | No | JSON object containing the following properties: username: user name for the user to be logged in; password: password for the user to be logged in | JSON file with a token for the authenticated user. |
-| Create category | POST | `/categories` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created category |
+| Create category | POST | `/categories` | Yes | JSON object with required properties. | JSON file with the created category |
 | Index categories | GET | `/categories` | No | None | JSON file with array of categories |
 | Show category | GET | `/categories/:id` | No | None | JSON file with selected category |
 | Update categories | PUT | `/categories/:id` | Yes | JSON object containing property to be amended with new value | JSON file with the updated category |
 | Destroy category | DELETE | `/categories/:id` | Yes | None | JSON file with the deleted category |
-| Create product | POST | `/products` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created product |
+| Create product | POST | `/products` | Yes | JSON object with required properties. | JSON file with the created product |
 | Index products | GET | `/products` | No | None | JSON file with array of products |
 | Show product | GET | `/products/:id` | No | None | JSON file with selected product |
 | Update product | PUT | `/products/:id` | Yes | JSON object containing properties to be amended with new values (any properties not included will be left unchanged) | JSON file with the updated product |
 | Destroy product | DELETE | `/products/:id` | Yes | None | JSON file with the deleted product |
 | Products by category | GET | `/products_in_category/:id` | No | None | JSON file with a list of products in the given category |
 | Top Products | GET | `/top_products/:max` | No | None | JSON file with an array of up to max top selling products |
-| Create order | POST | `/orders` | Yes | JSON object with values. id can be set to an empty string as it will be created automatically | JSON file with the created order (see below) |
+| Create order | POST | `/orders` | Yes | JSON object with required properties. | JSON file with the created order (see below) |
 | Index orders | GET | `/orders` | Yes | None | JSON file with array of orders |
 | Show order | GET | `/orders/:id` | Yes | None | JSON file with selected order |
 | Update order | PUT | `/orders/:id` | Yes | JSON object containing properties to be amended with new values (any properties not included will be left unchanged) | JSON file with the updated order |
 | Destroy order | DELETE | `/orders/:id` | Yes | None | JSON file with the deleted order |
 
+### Examples
+
+| Operation | HTTP verb | Endpoint | Body | Auth |
+| --- | --- | --- | --- | --- |
+| Customer self registration | POST | `/users/register` | `{"first_name": "Desperate", "last_name": "Dan", "username": "ddan", "password": "unbreakable_password"}` | No auth headers required |
+| Authenticate existing user | POST | `/users/authenticate` | `{"username": "admin", "password": "cant_touch_this"}` | No auth headers required |
+| Create an admin user | POST | `/users` | `{ "auth_level": "2", "first_name": "Ivan", "last_name": "Account", "username": "admintoo", "password": "fido"}` | Bearer token set to string generated by authenticate step |
+| Update the name of an existing product | PUT | `/products/37` | `{"name": "New and improved sparkle" }` | Bearer token set to string generated by authenticate step |
+| Get top 5 products | GET | `/top_products/5` | No body required | No auth headers required |
+| Get an index of all categories | GET | `/categories` | No body required | No auth headers required |
+| Show an order | GET | `/orders/142` | No body required | Bearer token set to string generated by authenticate step |
+| Destroy an order | DELETE | `/orders/37` | No body required | Bearer token set to string generated by authenticate step |
 
 ### Authorisation
 
@@ -165,11 +177,18 @@ Let's say that the minimum level for any access is set to 2 and the minimum leve
 
 Passwords are stored in an encrypted form in the database. The API will never return password data, therefore, when a user record is requested, the password property is always blank. One possible method for handling lost passwords, given this configuration, is for an admin user to modify the user record with a temporary password and then for the user to change this after successful login.
 
+### Tips
+- You will need to use the superuser account to create your initial admin user(s). Once you have at least one admin user, you can switch to that account for further user creation if you wish
+- API operations on the superuser account are not permitted, i.e. you can't use the API to update or destroy the superuser. The superuser account will also not be revealed by any show or index operations.
+- Users are not permitted to read, update or destroy user accounts at a higher authorisation level than their own
+- Users created using the register option are always created at the default authorisation level
+- Users at the default authorisation level (customers) are not permitted to update or destroy category and product records and can only read, update and destroy other records that belong to them
+
 ## Set up and scripts
 
 ### To set up the project
 
-Create a .env file in the project root. *NOTE*: An example .env file has been included for the purpose of testing the solution only. To use this you can simply rename `.env.example` to `.env`. 
+Create a `.env` file in the project root. **IMPORTANT NOTE: An example `.env` file has been included for the purpose of testing the solution only. To use this, you can simply rename `.env.example` to `.env`** 
 
 The env file should contain the following environment variables. :
 
@@ -190,47 +209,55 @@ The env file should contain the following environment variables. :
 | API_HOST | The base URL or IP address that should be used to access the API |
 | API_PORT | The port that should be exposed to access the API |
 | DEFAULT_USER_AUTHLEVEL | The authorisation level that will be given to end users who use the registration route. Normally you will want to leave this set to 1 (the lowest level) |
-| SUPERUSER_AUTHLEVEL | The authorisation level that will be given to the super user account that is automatically created. This should be the highest authorisation level in use. |
+| SUPERUSER_AUTH_LEVEL | The authorisation level that will be given to the super user account that is automatically created. This should be the highest authorisation level in use. |
 | SUPERUSER_USERNAME | The username that will be given to the super user account that is automatically created. |
 | SUPERUSER_PASSWORD | The password that will be given to the super user account that is automatically created. |
 | BCRYPT_PASSWORD | The password that will be used for the function that encrypts and decrypts user passwords. | 
 | SALT_ROUNDS | The number of salt rounds to use when encrypting user passwords. |
 | TOKEN_SECRET | A string that is used as the private key for creating user authorisation tokens. |
 
-Set up the database (NOTE: this app uses a dockerised version of the postgres database to avoid having to install postgres locally)
+Open a terminal in the project root and **set up the database** (NOTE: this app uses a dockerised version of the postgres database to avoid having to install and set up postgres locally. You will need to have the Docker engine installed and running first if you don't already have it. [Getting started with Docker](https://www.docker.com/get-started))
 ```
 docker-compose up
 ```
 
-Install the application:
+Open a new terminal in the project root (leaving the terminal with Docker open and running) and **install the application** NOTE: You can start the install process while the docker containers are still being created but please wait for the dockerised databases to be ready to accept connections before completing any further steps:
 ```
 npm install
 ```
 
-Not a required, set up step, but at this point you might want to run the test suite to ensure that everything is running as it should:
+Not a required set up step, but at this point you might want to **run the test suite** to ensure that everything is running as it should:
 ```
 npm run test
 ```
 NOTE: The test suite uses the Test database - this database is set up immediately prior to running the tests and then torn down again immediately afterwards. 
 
-Start the application:
+Not a required set up step, but if you are making changes to the source files you might want to **start the application in development mode**:
+
+```
+npm run watch
+```
+
+This will run the required database migrations and then start the application while watching for changes to the source files. If the source files are updated, the application will restart.
+
+**Start the application** in production mode:
 
 ```
 npm run start
 ```
 
-NOTE this will run the required database migrations using db-migrate before starting the server.
+NOTE this will compile the source files and run the required database migrations using db-migrate before starting the server.
 
-Stopping the application:
+**Stop the application**:
 
 You can stop the running node server by hitting `CRTL + C` in the terminal in which it is running. Note this will terminate the application but will leave the database intact and the postgres servers running. 
 
-To remove the database (CAUTION: This will permanantly destroy all data):
+To **remove the database** (CAUTION: This will permanantly destroy all data):
 ```
 npm run migrate-down
 ```
 
-To stop and remove the postgres database servers:
+To **stop and remove the postgres database servers**:
 ```
 docker-compose down
 ```
@@ -248,3 +275,4 @@ docker-compose down
 - The test suite is created with [jasmine](https://www.npmjs.com/package/jasmine)
 - Typescript execution/compilation is managed with [ts-node](https://www.npmjs.com/package/ts-node) and [tsc-watch](https://www.npmjs.com/package/tsc-watch)
 - npm script execution is enhanced with [npm-run-all](https://www.npmjs.com/package/npm-run-all) and [cross-env](https://www.npmjs.com/package/cross-env)
+- The build process makes use of [copyfiles](https://www.npmjs.com/package/copyfiles)

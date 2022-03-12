@@ -1,8 +1,15 @@
+import dotenv from 'dotenv';
 import crypto from 'crypto';
 import {CategoryStore} from '../../../src/models/categories';
 import {UserStore} from '../../../src/models/users';
 import {ProductStore} from '../../../src/models/products';
 import {OrderStore} from '../../../src/models/orders';
+
+dotenv.config();
+
+const {
+    SUPERUSER_AUTHLEVEL
+} = process.env;
 
 // Creates a valid foreign key of the requested type. Only the top-level object need be requested - if that object has further
 // foreign key dependencies, these will be created automatically
@@ -36,7 +43,7 @@ async function getForeignKey(type: string) : Promise<string> {
                 let userName = '';
                 while (userName === '') {
                     userName = getRandomString();
-                    const userEntries = await userStore.index();
+                    const userEntries = await userStore.index(SUPERUSER_AUTHLEVEL as string);
                     if (userEntries.find(el => el.username.toLowerCase() === userName.toLowerCase())) {
                         userName = '';
                     }

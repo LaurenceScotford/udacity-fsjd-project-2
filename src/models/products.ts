@@ -117,7 +117,7 @@ export class ProductStore {
         }
     }
 
-    async topProducts(numToShow: number): Promise<Product[]> {
+    async topProducts(numToShow: number | string): Promise<Product[]> {
         try {
             // Get a list of products sold and quantities
             const conn = await db.connect();

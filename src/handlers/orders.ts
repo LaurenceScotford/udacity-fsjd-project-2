@@ -14,24 +14,24 @@ const store = new OrderStore();
 const index = async (_req: Request, res: Response) => {
     try {
         let user_id: string | null = null;
-        if (res.locals.payload.auth_level == DEFAULT_USER_AUTHLEVEL) {
-            user_id = res.locals.payload.user_id;
+        if (res.locals.payload.user.auth_level == DEFAULT_USER_AUTHLEVEL) {
+            user_id = res.locals.payload.user.id;
         }
         const orders = await store.index(user_id);
         res.json(orders);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
 const show = async (req: Request, res: Response) => {
     try {
-        const order = await store.show(req.params.id);
+        const order = await store.show(req.params.id, res.locals.payload);
         res.json(order);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -47,7 +47,7 @@ const create = async (req: Request, res: Response) => {
         res.json(newOrder);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }  
 };
 
@@ -59,21 +59,21 @@ const update = async (req: Request, res: Response) => {
             status: req.body.status,
             products: req.body.products
         }
-        const updatedOrder = await store.update(order);
+        const updatedOrder = await store.update(order, res.locals.payload);
         res.json(updatedOrder);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
 const destroy = async (req: Request, res: Response) => {
     try {
-        const deletedOrder = await store.delete(req.params.id);
+        const deletedOrder = await store.delete(req.params.id, res.locals.payload);
         res.json(deletedOrder);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 }
 
@@ -83,7 +83,7 @@ const currentOrder = async (req: Request, res: Response) => {
         res.json(order);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 }
 
@@ -93,18 +93,18 @@ const completedOrders = async (req: Request, res: Response) => {
         res.json(orders);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 }
 
 const orders_routes = (app: express.Application) => {
     app.get('/orders', verifyAuthToken(1, 2, null), index);
-    app.get('/orders/:id', verifyAuthToken(1, 2, 'user_id'), show);
-    app.get('/open_order/:id', verifyAuthToken(0, 1, 'id'), currentOrder);
-    app.get('/completed_orders/:id', verifyAuthToken(0, 1, 'id'), completedOrders);
-    app.post('/orders', verifyAuthToken(0, 1, 'userid'), create);
-    app.put('/orders', verifyAuthToken(0, 1, 'userid'), update);
-    app.delete('/orders', verifyAuthToken(0, 1, 'userid'), destroy);
+    app.get('/orders/:id', verifyAuthToken(1, 2, null), show);
+    app.get('/open_order/:id', verifyAuthToken(1, 2, 'id'), currentOrder);
+    app.get('/completed_orders/:id', verifyAuthToken(1, 2, 'id'), completedOrders);
+    app.post('/orders', verifyAuthToken(1, 2, 'userid'), create);
+    app.put('/orders/:id', verifyAuthToken(1, 2, null), update);
+    app.delete('/orders/:id', verifyAuthToken(1, 2, null), destroy);
 };
 
 export default orders_routes;

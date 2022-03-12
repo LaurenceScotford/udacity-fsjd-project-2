@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import e from 'express';
 import express, {Request, Response} from 'express';
 import jwt from 'jsonwebtoken';
 import verifyAuthToken from '../middleware/verifyAuthToken';
@@ -14,21 +15,22 @@ const store = new UserStore();
 
 const index = async (_req: Request, res: Response) => {
     try {
-        const users = await store.index(res.locals.auth_level);
+        const users = await store.index(res.locals.payload.user.auth_level);
         res.json(users);
     } catch(err) {
+        console.log(err);
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
 const show = async (req: Request, res: Response) => {
     try {
-        const user = await store.show(req.params.id, res.locals.auth_level);
+        const user = await store.show(req.params.id, res.locals.payload.user.auth_level);
         res.json(user);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -46,7 +48,7 @@ const create = async (req: Request, res: Response) => {
         res.json(newUser);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }  
 };
 
@@ -60,32 +62,36 @@ const update = async (req: Request, res: Response) => {
             username: req.body.username,
             password: req.body.password
         }
-        const updatedUser = await store.update(user, res.locals.auth_level);
+        const updatedUser = await store.update(user, res.locals.payload.user.auth_level);
         res.json(updatedUser);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
 const destroy = async (req: Request, res: Response) => {
     try {
-        const deletedUser = await store.delete(req.params.id, res.locals.auth_level);
+        const deletedUser = await store.delete(req.params.id, res.locals.payload.user.auth_level);
         res.json(deletedUser);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 }
 
 const authenticate = async (req: Request, res: Response) => {
     try {
         const authenticatedUser = await store.authenticate(req.body.username, req.body.password);
-        const token = jwt.sign({user: authenticatedUser}, process.env.TOKEN_SECRET as string); 
-        res.json(token);
+        
+        if (authenticatedUser) {
+            const token = jwt.sign({user: authenticatedUser}, process.env.TOKEN_SECRET as string); 
+            res.json(token);
+        }
+        
     } catch(err) {
         res.status(401);
-        res.json(err);
+        res.send(String(err));
     }
 }
 
@@ -103,26 +109,27 @@ const register = async(req: Request, res: Response) => {
         res.json(newUser);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 }
 
 // Reject attempts to create, modify or delete a user at a higher level than you
 const noLeapFrog = (req: Request, res: Response, next: Function) => {
     try {
-        if (res.locals.payload && req.body.auth_level >= res.locals.payload.auth_level) {
+        if (!req.body.auth_level || (res.locals.payload && req.body.auth_level <= res.locals.payload.user.auth_level)) {
             // User is creating or modifying a user at the same or lower level
             next();
+        } else {
+            throw new Error('You are not permitted to run user operations on a user at a higher authorisation level than you');
         }
     } catch(err) {
-        res.status(401);
         next(err);
     }
 }
 
 const users_routes = (app: express.Application) => {
-    app.get('/users', index);
-    app.get('/users/:id', show);
+    app.get('/users', verifyAuthToken(1, 2, 'id'), index);
+    app.get('/users/:id', verifyAuthToken(1, 2, 'id'), show);
     app.post('/users', verifyAuthToken(1, 2, 'id'), noLeapFrog, create);
     app.post('/users/register', register);
     app.put('/users/:id', verifyAuthToken(1, 2, 'id'), noLeapFrog, update);

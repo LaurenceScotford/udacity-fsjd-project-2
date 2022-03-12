@@ -80,7 +80,7 @@ describe('Order Model', () => {
                 {product_id: productId, quantity: 1}
             ]
         });
-        const test_data = await store.show(result.id);
+        const test_data = await store.show(result.id, null);
         expect(test_data).toEqual({
             id: result.id,
             user_id: userId,
@@ -109,7 +109,7 @@ describe('Order Model', () => {
         newOrder.products = [
             {product_id: productId2, quantity: 2}
         ];
-        const result = await store.update(newOrder);
+        const result = await store.update(newOrder, null);
         expect(result).toEqual({
             id: result.id,
             user_id: userId2,
@@ -134,7 +134,7 @@ describe('Order Model', () => {
         newOrder.user_id = '';
         newOrder.status = 'complete';
         newOrder.products = [];
-        const result = await store.update(newOrder);
+        const result = await store.update(newOrder, null);
         expect(result).toEqual({
             id: result.id,
             user_id: userId,
@@ -149,7 +149,7 @@ describe('Order Model', () => {
         newOrder.products = [
             {product_id: productId2, quantity: 2}
         ];
-        const result2 = await store.update(newOrder);
+        const result2 = await store.update(newOrder, null);
         expect(result2).toEqual({
             id: result.id,
             user_id: userId,
@@ -172,7 +172,7 @@ describe('Order Model', () => {
             ]
         });
         const id = newOrder.id;
-        const deletedOrder = await store.delete(id);
+        const deletedOrder = await store.delete(id, null);
         expect(deletedOrder).toEqual({
             id: id,
             user_id: userId, 
@@ -181,7 +181,7 @@ describe('Order Model', () => {
                 {product_id: productId, quantity: 2}
             ]
         });
-        const result = await store.show(id);
+        const result = await store.show(id, null);
         expect(result).toBeUndefined();
     });
 

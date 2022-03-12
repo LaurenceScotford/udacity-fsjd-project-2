@@ -10,7 +10,7 @@ const index = async (_req: Request, res: Response) => {
         res.json(categories);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -20,7 +20,7 @@ const show = async (req: Request, res: Response) => {
         res.json(category);
     } catch(err) {
         res.status(500);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -34,7 +34,7 @@ const create = async (req: Request, res: Response) => {
         res.json(newCategory);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }  
 };
 
@@ -48,7 +48,7 @@ const update = async (req: Request, res: Response) => {
         res.json(updatedCategory);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 };
 
@@ -58,7 +58,7 @@ const destroy = async (req: Request, res: Response) => {
         res.json(deletedCategory);
     } catch(err) {
         res.status(400);
-        res.json(err);
+        res.send(String(err));
     }
 }
 

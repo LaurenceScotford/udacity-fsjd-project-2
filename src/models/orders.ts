@@ -1,4 +1,5 @@
 import db from '../database';
+import {TokenInterface} from '../middleware/verifyAuthToken';
 
 type OrderProducts = {
     product_id: string;
@@ -24,12 +25,12 @@ export class OrderStore {
             for (let i = 0; i < result.rows.length; i++) {
                 // If we're listing orders for a specific user, filter out orders that are not owned by that user
                 if (!user_id || user_id == result.rows[i].user_id) {
-                    orders[i] = {
+                    orders.push({
                         id: result.rows[i].id,
                         user_id: result.rows[i].user_id,
                         status: result.rows[i].status,
                         products: await this.#getProductList(result.rows[i].id)
-                    }
+                    });
                 } 
             } 
             return orders; 
@@ -38,7 +39,7 @@ export class OrderStore {
         }
     }
 
-    async show(id: string): Promise<Order> {
+    async show(id: string, payload: TokenInterface | null): Promise<Order> {
         try {
             const sql = 'SELECT * FROM orders WHERE id = ($1)';
             const conn = await db.connect();
@@ -46,6 +47,14 @@ export class OrderStore {
             conn.release();
 
             if (result.rows[0]) {
+
+                // Check for attempt to display an order not owned
+                if (payload && payload.user.own) {
+                    if (result.rows[0].user_id != payload.user.id) {
+                        throw new Error('You are not authorised to access orders that you don\'t own');
+                    }
+                }
+
                 const order: Order = {
                     id: result.rows[0].id,
                     user_id: result.rows[0].user_id,
@@ -88,8 +97,16 @@ export class OrderStore {
         }
     }
   
-    async update(order: Order): Promise<Order> {
+    async update(order: Order, payload: TokenInterface | null): Promise<Order> {
         try {
+                // Check for attempt to update order not owned
+                if (payload && payload.user.own) {
+                    let currentOrder = await this.show(order.id, null);
+                    if (currentOrder.user_id != payload.user.id) {
+                        throw new Error('You are not authorised to modify orders that you don\'t own');
+                    }
+                }
+
                 // If the order status is being set to active, check that there is not already a
                 // different active order for this user
                 if (order.status === 'active') {
@@ -125,11 +142,11 @@ export class OrderStore {
                     updatedOrder = result.rows[0];
                     conn.release();
                 } else {
-                    updatedOrder = await this.show(order.id);
+                    updatedOrder = await this.show(order.id, null);
                 }
 
                 // If the product list has been updated, amend the entries in the order_products table
-                if (order.products.length) {
+                if (order.products && order.products.length) {
                     // First remove all existing entries
                     await this.#deleteProductList(order.id);
 
@@ -138,19 +155,27 @@ export class OrderStore {
                 }
                 
                 // If something has been updated, return the updated order
-                if (argList.length || order.products.length) {
+                if (argList.length || (order.products && order.products.length)) {
                     updatedOrder.products = await this.#getProductList(order.id);
                     return updatedOrder;
                 } else {
                     throw new Error('No properties were passed in to update');
                 }
         } catch (err) {
-            throw new Error(`Could not update order for user_id ${order.user_id}. Error: ${err}`)
+            throw new Error(`Could not update order ${order.id}. Error: ${err}`)
         }
     }
 
-    async delete(id: string): Promise<Order> {
+    async delete(id: string, payload: TokenInterface | null): Promise<Order> {
         try {
+            // Check for attempt to delete order not owned
+            if (payload && payload.user.own) {
+                let currentOrder = await this.show(id, null);
+                if (currentOrder.user_id != payload.user.id) {
+                    throw new Error('You are not authorised to delete orders that you don\'t own');
+                }
+            }
+
             // First delete orderProducts entries for this order
             const productsDeleted = await this.#getProductList(id);
             await this.#deleteProductList(id);

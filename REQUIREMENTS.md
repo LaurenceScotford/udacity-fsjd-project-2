@@ -75,7 +75,7 @@ These are the notes from a meeting with the frontend developer that describe wha
 
 **Users** - A list of valid users for the database.
 
-| Field | Description |
+| Property | Description |
 | ----- | ----------- |
 | id | A unique id representing this user |
 | auth_level | An integer value (1 or above) representing the authorisation level of this user (see Authorisation description below)
@@ -87,7 +87,7 @@ These are the notes from a meeting with the frontend developer that describe wha
 
 **Categories** - A list of categories for types of product sold
 
-| Field | Description |
+| Property | Description |
 | ----- | ----------- |
 | id | A unique id representing this category |
 | category | The name of the category (this must also be unique) |
@@ -95,7 +95,7 @@ These are the notes from a meeting with the frontend developer that describe wha
 
 **Products** - A list of products for sale
 
-| Field | Description |
+| Property | Description |
 | ----- | ----------- |
 | id | A unique id representing this product |
 | name | A name describing the product |
@@ -105,7 +105,7 @@ These are the notes from a meeting with the frontend developer that describe wha
 
 **Orders** - A list of customer orders  
 
-| Field | Description |
+| Property | Description |
 | ----- | ----------- |
 | id | A unique id representing this order |
 | user_id | The id of the user the order belongs to |
