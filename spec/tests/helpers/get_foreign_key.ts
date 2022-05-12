@@ -66,6 +66,8 @@ async function getForeignKey(type: string) : Promise<string> {
                     id: '',
                     name: getRandomString(),
                     price: Math.round(Math.random() * 10000) / 100,
+                    url: getRandomString(),
+                    description: getRandomString(),
                     category: catId
                 });
 

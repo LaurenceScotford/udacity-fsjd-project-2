@@ -30,6 +30,8 @@ const create = async (req: Request, res: Response) => {
             id: '',
             name: req.body.name,
             price: req.body.price,
+            url: req.body.url,
+            description: req.body.description,
             category: req.body.category
         };
         const newProduct = await store.create(product);
@@ -46,6 +48,8 @@ const update = async (req: Request, res: Response) => {
             id: req.params.id,
             name: req.body.name,
             price: req.body.price,
+            url: req.body.url,
+            description: req.body.description,
             category: req.body.category
         }
         const updatedProduct = await store.update(product);

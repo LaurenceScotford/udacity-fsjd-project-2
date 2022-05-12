@@ -4,6 +4,8 @@ export type Product = {
     id: string;
     name: string;
     price: number | string;
+    url: string,
+    description: string,
     category: string; 
 };
 
@@ -11,7 +13,9 @@ export type TopProduct = {
     id: string;
     name: string;
     price: number | string;
-    category: string; 
+    category: string;
+    url: string;
+    description: string; 
     quantity: number;
 }
 
@@ -45,9 +49,9 @@ export class ProductStore {
 
       async create(prod: Product): Promise<Product> {
         try {
-            const sql = 'INSERT INTO products (name, price, category) VALUES($1, $2, $3) RETURNING *';
+            const sql = 'INSERT INTO products (name, price, url, description, category) VALUES($1, $2, $3, $4, $5) RETURNING *';
             const conn = await db.connect();
-            const result = await conn.query(sql, [prod.name, prod.price, prod.category]);
+            const result = await conn.query(sql, [prod.name, prod.price, prod.url, prod.description, prod.category]);
             const product = result.rows[0];
             conn.release();
             return this.#priceToNum(product);
@@ -62,8 +66,8 @@ export class ProductStore {
             let argCount = 1;
             let argList = []; 
             let sql = 'UPDATE products SET';
-            type argType = 'name' | 'price' | 'category';
-            let args: argType[] = ['name', 'price', 'category'];
+            type argType = 'name' | 'price' | 'url' | 'description' | 'category';
+            let args: argType[] = ['name', 'price', 'url', 'description', 'category'];
             for (let i = 0; i < args.length; i++) {
                 const prop: argType = args[i];
                 if(prod[prop]) {
@@ -156,6 +160,8 @@ export class ProductStore {
                     id: prod.id,
                     name: prod.name,
                     price: prod.price,
+                    url: prod.url,
+                    description: prod.description,
                     category: prod.category, 
                     quantity: sortList[i].quantity
                 });
