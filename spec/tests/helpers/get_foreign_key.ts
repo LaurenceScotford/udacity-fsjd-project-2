@@ -80,6 +80,8 @@ async function getForeignKey(type: string) : Promise<string> {
                 const newOrder = await orderStore.create({
                     id: '',
                     user_id: userId,
+                    delivery_address: '1 My Street, My Town',
+                    date_time: null,
                     status: 'complete',
                     products: [{
                         product_id: productId,

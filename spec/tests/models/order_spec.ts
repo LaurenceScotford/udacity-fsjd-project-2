@@ -38,7 +38,9 @@ describe('Order Model', () => {
         const productId = await getForeignKey('product');
         const result = await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: null,
             status: 'active',
             products: [
                 {product_id: productId, quantity: 1}
@@ -47,6 +49,8 @@ describe('Order Model', () => {
         expect(result).toEqual({
             id: result.id,
             user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: result.date_time,
             status: 'active',
             products: [
                 {product_id: productId, quantity: 1}
@@ -60,6 +64,8 @@ describe('Order Model', () => {
         await store.create({
             id: '',
             user_id: userId, 
+            delivery_address: '1 My Street, My Town',
+            date_time: null,
             status: 'active',
             products: [
                 {product_id: productId, quantity: 1}
@@ -75,6 +81,8 @@ describe('Order Model', () => {
         const result = await store.create({
             id: '',
             user_id: userId, 
+            delivery_address: '1 My Street, My Town',
+            date_time: null,
             status: 'active',
             products: [
                 {product_id: productId, quantity: 1}
@@ -84,6 +92,8 @@ describe('Order Model', () => {
         expect(test_data).toEqual({
             id: result.id,
             user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: result.date_time,
             status: 'active',
             products: [
                 {product_id: productId, quantity: 1}
@@ -96,7 +106,9 @@ describe('Order Model', () => {
         const productId1 = await getForeignKey('product');
         const newOrder = await store.create({
             id: '',
-            user_id: userId1,  
+            user_id: userId1,
+            delivery_address: '1 My Street, My Town',
+            date_time: null, 
             status: 'active',
             products: [
                 {product_id: productId1, quantity: 1}
@@ -105,6 +117,8 @@ describe('Order Model', () => {
         const userId2 = await getForeignKey('user');
         const productId2 = await getForeignKey('product');
         newOrder.user_id = userId2;
+        newOrder.delivery_address = '2 Your Street, Your Town',
+        newOrder.date_time = null,
         newOrder.status = 'complete';
         newOrder.products = [
             {product_id: productId2, quantity: 2}
@@ -113,6 +127,8 @@ describe('Order Model', () => {
         expect(result).toEqual({
             id: result.id,
             user_id: userId2,
+            delivery_address: '2 Your Street, Your Town',
+            date_time: result.date_time,
             status: 'complete',
             products: [
                 {product_id: productId2, quantity: 2}
@@ -125,7 +141,9 @@ describe('Order Model', () => {
         const productId1 = await getForeignKey('product');
         const newOrder = await store.create({
             id: '',
-            user_id: userId,  
+            user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: null,
             status: 'active',
             products: [
                 {product_id: productId1, quantity: 1}
@@ -138,6 +156,8 @@ describe('Order Model', () => {
         expect(result).toEqual({
             id: result.id,
             user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: result.date_time,
             status: 'complete',
             products: [
                 {product_id: productId1, quantity: 1}
@@ -145,6 +165,8 @@ describe('Order Model', () => {
         });
         const productId2 = await getForeignKey('product');
         newOrder.user_id = '';
+        newOrder.delivery_address = '';
+        newOrder.date_time = null;
         newOrder.status = '';
         newOrder.products = [
             {product_id: productId2, quantity: 2}
@@ -153,6 +175,8 @@ describe('Order Model', () => {
         expect(result2).toEqual({
             id: result.id,
             user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: result2.date_time,
             status: 'complete',
             products: [
                 {product_id: productId2, quantity: 2}
@@ -165,17 +189,22 @@ describe('Order Model', () => {
         const productId = await getForeignKey('product');
         const newOrder = await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: null,
             status: 'complete',
             products: [
                 {product_id: productId, quantity: 2}
             ]
         });
         const id = newOrder.id;
+        const date_time = newOrder.date_time;
         const deletedOrder = await store.delete(id, null);
         expect(deletedOrder).toEqual({
             id: id,
-            user_id: userId, 
+            user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: date_time, 
             status: 'complete',
             products: [
                 {product_id: productId, quantity: 2}
@@ -191,7 +220,9 @@ describe('Order Model', () => {
         const productId2 = await getForeignKey('product');
         const completedOrder = await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: null,
             status: 'complete',
             products: [
                 {product_id: productId1, quantity: 2}
@@ -199,7 +230,9 @@ describe('Order Model', () => {
         });
         const activeOrder = await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
+            delivery_address: '2 Your Street, Your Town',
+            date_time: null, 
             status: 'active',
             products: [
                 {product_id: productId2, quantity: 1}
@@ -209,6 +242,8 @@ describe('Order Model', () => {
         expect(result).toEqual({
             id: result.id,
             user_id: userId,
+            delivery_address: '2 Your Street, Your Town',
+            date_time: result.date_time,
             status: 'active',
             products: [
                 {product_id: productId2, quantity: 1}
@@ -222,7 +257,9 @@ describe('Order Model', () => {
         const productId2 = await getForeignKey('product');
         const completedOrder = await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: null,
             status: 'complete',
             products: [
                 {product_id: productId1, quantity: 2}
@@ -230,7 +267,9 @@ describe('Order Model', () => {
         });
         const activeOrder = await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
+            delivery_address: '2 Your Street, Your Town',
+            date_time: null,
             status: 'active',
             products: [
                 {product_id: productId2, quantity: 1}
@@ -240,6 +279,8 @@ describe('Order Model', () => {
         expect(results[0]).toEqual({
             id: results[0].id,
             user_id: userId,
+            delivery_address: '1 My Street, My Town',
+            date_time: results[0].date_time,
             status: 'complete',
             products: [
                 {product_id: productId1, quantity: 2}

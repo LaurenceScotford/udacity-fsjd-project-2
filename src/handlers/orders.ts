@@ -40,6 +40,8 @@ const create = async (req: Request, res: Response) => {
         const order: Order = {
             id: '',
             user_id: req.body.user_id,
+            delivery_address: req.body.delivery_address,
+            date_time: null,
             status: req.body.status,
             products: req.body.products
         };
@@ -56,6 +58,8 @@ const update = async (req: Request, res: Response) => {
         const order: Order = {
             id: req.params.id,
             user_id: req.body.user_id,
+            delivery_address: req.body.delivery_address,
+            date_time: null,
             status: req.body.status,
             products: req.body.products
         }

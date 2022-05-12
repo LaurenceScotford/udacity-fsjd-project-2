@@ -9,6 +9,8 @@ type OrderProducts = {
 export type Order = {
     id: string;
     user_id: string;
+    delivery_address: string;
+    date_time: number | null;
     status: string;
     products: OrderProducts[]
 };
@@ -28,6 +30,8 @@ export class OrderStore {
                     orders.push({
                         id: result.rows[i].id,
                         user_id: result.rows[i].user_id,
+                        delivery_address: result.rows[i].delivery_address,
+                        date_time: result.rows[i].date_time,
                         status: result.rows[i].status,
                         products: await this.#getProductList(result.rows[i].id)
                     });
@@ -58,6 +62,8 @@ export class OrderStore {
                 const order: Order = {
                     id: result.rows[0].id,
                     user_id: result.rows[0].user_id,
+                    delivery_address: result.rows[0].delivery_address,
+                    date_time: result.rows[0].date_time,
                     status: result.rows[0].status,
                     products: await this.#getProductList(result.rows[0].id)
                 }
@@ -78,15 +84,17 @@ export class OrderStore {
                 throw new Error('A user can only have a single active order');
             }
 
-            const sql = 'INSERT INTO orders (user_id, status) VALUES($1, $2) RETURNING *';
+            const sql = 'INSERT INTO orders (user_id, delivery_address, date_time, status) VALUES($1, $2, $3, $4) RETURNING *';
             const conn = await db.connect();
-            const result = await conn.query(sql, [order.user_id, order.status]);
+            const result = await conn.query(sql, [order.user_id, order.delivery_address, Date.now(), order.status]);
             conn.release();
             await this.#setProductList(result.rows[0].id, order.products);
 
             const newOrder: Order = {
                 id: result.rows[0].id,
                 user_id: result.rows[0].user_id,
+                delivery_address: result.rows[0].delivery_address,
+                date_time: result.rows[0].date_time,
                 status: result.rows[0].status,
                 products: await this.#getProductList(result.rows[0].id)
             }
@@ -120,8 +128,8 @@ export class OrderStore {
                 let argCount = 1;
                 let argList = []; 
                 let sql = 'UPDATE orders SET';
-                type argType = 'user_id' | 'status';
-                let args: argType[] = ['user_id', 'status'];
+                type argType = 'user_id' | 'delivery_address' | 'status';
+                let args: argType[] = ['user_id', 'delivery_address', 'status'];
                 for (let i = 0; i < args.length; i++) {
                     const prop: argType = args[i];
                     if(order[prop]) {
@@ -132,11 +140,21 @@ export class OrderStore {
                 }
       
                 let updatedOrder : Order;
+                let wasUpdated: Boolean = ((argList.length > 0) || (order.products && order.products.length > 0));
 
                 // If at least one property has been updated, do the update
                 if (argList.length) {
                     argList.push(order.id);
-                    sql += ` WHERE id = ($${argCount}) RETURNING *`;
+                    sql += `, date_time = ${Date.now()} WHERE id = ($${argCount}) RETURNING *`;
+                    
+                } else if (order.products && order.products.length) {
+                    // The products only have been updated, so just update the timestamp here
+                    argList = [order.id];
+                    sql = `UPDATE orders SET date_time = ${Date.now()} WHERE id = ($1) RETURNING *`
+                } 
+
+                // If there's been any change, write the new record
+                if (wasUpdated) {
                     const conn = await db.connect();
                     const result = await conn.query(sql, argList);
                     updatedOrder = result.rows[0];
@@ -144,7 +162,7 @@ export class OrderStore {
                 } else {
                     updatedOrder = await this.show(order.id, null);
                 }
-
+                    
                 // If the product list has been updated, amend the entries in the order_products table
                 if (order.products && order.products.length) {
                     // First remove all existing entries
@@ -201,6 +219,8 @@ export class OrderStore {
                 const order: Order = {
                     id: result.rows[0].id,
                     user_id: result.rows[0].user_id,
+                    delivery_address: result.rows[0].delivery_address,
+                    date_time: result.rows[0].date_time,
                     status: result.rows[0].status,
                     products: await this.#getProductList(result.rows[0].id)
                 }
@@ -225,6 +245,8 @@ export class OrderStore {
                 orders[i] = {
                     id: result.rows[i].id,
                     user_id: result.rows[i].user_id,
+                    delivery_address: result.rows[i].delivery_address,
+                    date_time: result.rows[i].date_time,
                     status: result.rows[i].status,
                     products: await this.#getProductList(result.rows[i].id)
                 }
