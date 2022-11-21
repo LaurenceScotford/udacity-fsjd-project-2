@@ -1,11 +1,8 @@
-import dotenv from 'dotenv';
 import crypto from 'crypto';
-import {CategoryStore} from '../../../src/models/categories';
-import {UserStore} from '../../../src/models/users';
-import {ProductStore} from '../../../src/models/products';
-import {OrderStore} from '../../../src/models/orders';
-
-dotenv.config();
+import { CategoryStore } from '../../../src/models/categories';
+import { UserStore } from '../../../src/models/users';
+import { ProductStore } from '../../../src/models/products';
+import { OrderStore } from '../../../src/models/orders';
 
 const {
     SUPERUSER_AUTHLEVEL
@@ -13,10 +10,10 @@ const {
 
 // Creates a valid foreign key of the requested type. Only the top-level object need be requested - if that object has further
 // foreign key dependencies, these will be created automatically
-async function getForeignKey(type: string) : Promise<string> {
+async function getForeignKey(type: string): Promise<string> {
     try {
         let foreignKey: string;
-        switch(type) {
+        switch (type) {
             case 'category':
                 const catStore = new CategoryStore();
                 // Create a new unique category name
@@ -28,7 +25,7 @@ async function getForeignKey(type: string) : Promise<string> {
                         catName = '';
                     }
                 }
-                
+
                 // Create the new category
                 const newCat = await catStore.create({
                     id: '',
@@ -90,8 +87,8 @@ async function getForeignKey(type: string) : Promise<string> {
                 });
                 return newOrder.id.toString();
             default:
-                throw new Error ('Foreign key table not recognised');
-            
+                throw new Error('Foreign key table not recognised');
+
         }
     } catch (err) {
         throw new Error(`Could not create foreign key of type ${type}. Error: ${err}`)

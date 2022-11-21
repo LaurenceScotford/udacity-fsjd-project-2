@@ -1,9 +1,6 @@
-import dotenv from 'dotenv';
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import verifyAuthToken from '../middleware/verifyAuthToken';
-import {Order, OrderStore} from '../models/orders';
-
-dotenv.config();
+import { Order, OrderStore } from '../models/orders';
 
 const {
     DEFAULT_USER_AUTHLEVEL
@@ -19,7 +16,7 @@ const index = async (_req: Request, res: Response) => {
         }
         const orders = await store.index(user_id);
         res.json(orders);
-    } catch(err) {
+    } catch (err) {
         res.status(500);
         res.send(String(err));
     }
@@ -29,7 +26,7 @@ const show = async (req: Request, res: Response) => {
     try {
         const order = await store.show(req.params.id, res.locals.payload);
         res.json(order);
-    } catch(err) {
+    } catch (err) {
         res.status(500);
         res.send(String(err));
     }
@@ -47,10 +44,10 @@ const create = async (req: Request, res: Response) => {
         };
         const newOrder = await store.create(order);
         res.json(newOrder);
-    } catch(err) {
+    } catch (err) {
         res.status(400);
         res.send(String(err));
-    }  
+    }
 };
 
 const update = async (req: Request, res: Response) => {
@@ -65,7 +62,7 @@ const update = async (req: Request, res: Response) => {
         }
         const updatedOrder = await store.update(order, res.locals.payload);
         res.json(updatedOrder);
-    } catch(err) {
+    } catch (err) {
         res.status(400);
         res.send(String(err));
     }
@@ -75,7 +72,7 @@ const destroy = async (req: Request, res: Response) => {
     try {
         const deletedOrder = await store.delete(req.params.id, res.locals.payload);
         res.json(deletedOrder);
-    } catch(err) {
+    } catch (err) {
         res.status(400);
         res.send(String(err));
     }
@@ -85,7 +82,7 @@ const currentOrder = async (req: Request, res: Response) => {
     try {
         const order = await store.currentOrder(req.params.id);
         res.json(order);
-    } catch(err) {
+    } catch (err) {
         res.status(500);
         res.send(String(err));
     }
@@ -95,7 +92,7 @@ const completedOrders = async (req: Request, res: Response) => {
     try {
         const orders = await store.completedOrders(req.params.id);
         res.json(orders);
-    } catch(err) {
+    } catch (err) {
         res.status(500);
         res.send(String(err));
     }

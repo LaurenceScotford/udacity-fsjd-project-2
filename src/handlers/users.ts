@@ -1,11 +1,7 @@
-import dotenv from 'dotenv';
-import e from 'express';
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import verifyAuthToken from '../middleware/verifyAuthToken';
-import {User, UserStore} from '../models/users';
-
-dotenv.config();
+import { User, UserStore } from '../models/users';
 
 const {
     DEFAULT_USER_AUTHLEVEL
@@ -17,7 +13,7 @@ const index = async (_req: Request, res: Response) => {
     try {
         const users = await store.index(res.locals.payload.user.auth_level);
         res.json(users);
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         res.status(500);
         res.send(String(err));
@@ -28,7 +24,7 @@ const show = async (req: Request, res: Response) => {
     try {
         const user = await store.show(req.params.id, res.locals.payload.user.auth_level);
         res.json(user);
-    } catch(err) {
+    } catch (err) {
         res.status(500);
         res.send(String(err));
     }
@@ -46,10 +42,10 @@ const create = async (req: Request, res: Response) => {
         };
         const newUser = await store.create(user);
         res.json(newUser);
-    } catch(err) {
+    } catch (err) {
         res.status(400);
         res.send(String(err));
-    }  
+    }
 };
 
 const update = async (req: Request, res: Response) => {
@@ -64,7 +60,7 @@ const update = async (req: Request, res: Response) => {
         }
         const updatedUser = await store.update(user, res.locals.payload.user.auth_level);
         res.json(updatedUser);
-    } catch(err) {
+    } catch (err) {
         res.status(400);
         res.send(String(err));
     }
@@ -74,7 +70,7 @@ const destroy = async (req: Request, res: Response) => {
     try {
         const deletedUser = await store.delete(req.params.id, res.locals.payload.user.auth_level);
         res.json(deletedUser);
-    } catch(err) {
+    } catch (err) {
         res.status(400);
         res.send(String(err));
     }
@@ -83,19 +79,19 @@ const destroy = async (req: Request, res: Response) => {
 const authenticate = async (req: Request, res: Response) => {
     try {
         const authenticatedUser = await store.authenticate(req.body.username, req.body.password);
-        
+
         if (authenticatedUser) {
-            const token = jwt.sign({user: authenticatedUser}, process.env.TOKEN_SECRET as string); 
+            const token = jwt.sign({ user: authenticatedUser }, process.env.TOKEN_SECRET as string);
             res.json(token);
         }
-        
-    } catch(err) {
+
+    } catch (err) {
         res.status(401);
         res.send(String(err));
     }
 }
 
-const register = async(req: Request, res: Response) => {
+const register = async (req: Request, res: Response) => {
     try {
         const user: User = {
             id: '',
@@ -107,7 +103,7 @@ const register = async(req: Request, res: Response) => {
         };
         const newUser = await store.create(user);
         res.json(newUser);
-    } catch(err) {
+    } catch (err) {
         res.status(400);
         res.send(String(err));
     }
@@ -122,7 +118,7 @@ const noLeapFrog = (req: Request, res: Response, next: Function) => {
         } else {
             throw new Error('You are not permitted to run user operations on a user at a higher authorisation level than you');
         }
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 }

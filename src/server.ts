@@ -1,11 +1,8 @@
-import dotenv from 'dotenv';
-import express, {Request, Response} from 'express';
-import categories_routes from  './handlers/categories';
-import products_routes from  './handlers/products';
-import users_routes from  './handlers/users';
-import orders_routes from  './handlers/orders';
-
-dotenv.config();
+import express, { Request, Response } from 'express';
+import categories_routes from './handlers/categories';
+import products_routes from './handlers/products';
+import users_routes from './handlers/users';
+import orders_routes from './handlers/orders';
 
 const {
     API_HOST,

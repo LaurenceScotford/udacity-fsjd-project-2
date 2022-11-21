@@ -8,7 +8,7 @@
     "watch": "npm-run-all -s migrate-up dev",
     "test": "cross-env ENV=test npm-run-all -s migrate-test-up jasmine-tests migrate-test-down --continue-on-error",
     "tsc": "tsc",
-    "dev": "tsc-watch --onSuccess \"node ./dist/server.js\"",
+    "dev": "tsc-watch --onSuccess \"node -r dotenv/config ./dist/server.js\"",
     "app": "node ./dist/server.js",
     "jasmine-tests": "jasmine-ts",
     "migrate-up": "db-migrate up --env dev",
@@ -17,7 +17,7 @@
     "migrate-test-up": "db-migrate up --env test",
     "copy-files": "copyfiles -u 1 src/public/** dist"
   },
-  "author": "Udacity",
+  "author": "Laurence Scotford / Udacity",
   "repository": {
     "type": "git",
     "url": "https://github.com/LaurenceScotford/udacity-fsjd-project-2.git"

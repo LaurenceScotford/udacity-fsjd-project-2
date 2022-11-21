@@ -1,14 +1,13 @@
 import dotenv from 'dotenv';
-import {UserStore} from '../../../src/models/users';
-
 dotenv.config();
+
+import { UserStore } from '../../../src/models/users';
 
 const {
     SUPERUSER_AUTHLEVEL
 } = process.env;
 
 const store = new UserStore();
-
 
 describe('User Model', () => {
     it('should have an index method', () => {
@@ -35,7 +34,7 @@ describe('User Model', () => {
         const result = await store.create({
             id: '',
             auth_level: 1,
-            first_name: 'John', 
+            first_name: 'John',
             last_name: 'Wanamaker',
             username: 'jwanamaker',
             password: 'duishfewn398u243fewn@~@'
@@ -54,7 +53,7 @@ describe('User Model', () => {
         await store.create({
             id: '',
             auth_level: 1,
-            first_name: 'Sam', 
+            first_name: 'Sam',
             last_name: 'Walton',
             username: 'swalton',
             password: 'jioed8u43%*&okop'
@@ -87,7 +86,7 @@ describe('User Model', () => {
         const newUser = await store.create({
             id: '',
             auth_level: 2,
-            first_name: 'Richard', 
+            first_name: 'Richard',
             last_name: 'Sears',
             username: 'rsears',
             password: 'bnyteg974uhweu^hed6%R'
@@ -112,12 +111,12 @@ describe('User Model', () => {
         const newUser = await store.create({
             id: '',
             auth_level: 1,
-            first_name: 'Frank', 
+            first_name: 'Frank',
             last_name: 'Woolworth',
             username: 'fwoolworth',
             password: 'dasufh78945u87^^uighedw'
         });
-        newUser.auth_level = ''; 
+        newUser.auth_level = '';
         newUser.first_name = '';
         newUser.last_name = '';
         newUser.username = 'frankw';
@@ -137,7 +136,7 @@ describe('User Model', () => {
         const newUser = await store.create({
             id: '',
             auth_level: 1,
-            first_name: 'Sebastian', 
+            first_name: 'Sebastian',
             last_name: 'Kresge',
             username: 'skresge',
             password: 'ndsa79342de8d3(*&^iwuehd'
@@ -147,9 +146,9 @@ describe('User Model', () => {
         expect(deletedUser).toEqual({
             id: id,
             auth_level: 1,
-            first_name: 'Sebastian', 
+            first_name: 'Sebastian',
             last_name: 'Kresge',
-            username: 'skresge', 
+            username: 'skresge',
             password: ''
         });
         const result = await store.show(id, SUPERUSER_AUTHLEVEL as string);

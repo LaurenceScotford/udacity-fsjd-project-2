@@ -1,8 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import getForeignKey from '../helpers/get_foreign_key';
-import {ProductStore} from '../../../src/models/products';
+import { ProductStore } from '../../../src/models/products';
 
 const store = new ProductStore();
-
 
 describe('Product Model', () => {
     it('should have an index method', () => {
@@ -37,7 +39,7 @@ describe('Product Model', () => {
         const catId = await getForeignKey('category');
         const result = await store.create({
             id: '',
-            name: 'Toothbrush', 
+            name: 'Toothbrush',
             price: 2.99,
             url: 'fhdiuhafhuaierhf.com/toothbrush',
             description: 'For cleaning your teeth.',
@@ -57,10 +59,10 @@ describe('Product Model', () => {
         const catId = await getForeignKey('category');
         await store.create({
             id: '',
-            name: 'Beach Ball', 
+            name: 'Beach Ball',
             price: 2.00,
             url: 'fhdiuhafhuaierhf.com/beachball',
-            description: 'For fun in the sun.', 
+            description: 'For fun in the sun.',
             category: catId
         });
         const result = await store.index();
@@ -74,7 +76,7 @@ describe('Product Model', () => {
             name: 'SatNav',
             price: 199.00,
             url: 'fhdiuhafhuaierhf.com/satnav',
-            description: 'For finding your way.', 
+            description: 'For finding your way.',
             category: catId
         });
         const test_data = await store.show(result.id);
@@ -93,7 +95,7 @@ describe('Product Model', () => {
         const catId2 = await getForeignKey('category');
         const newProd = await store.create({
             id: '',
-            name: 'Tomato', 
+            name: 'Tomato',
             price: 2.00,
             url: 'fhdiuhafhuaierhf.com/tomato',
             description: 'For eating.',
@@ -117,20 +119,20 @@ describe('Product Model', () => {
         const catId = await getForeignKey('category');
         const newProd = await store.create({
             id: '',
-            name: 'Watering Can', 
+            name: 'Watering Can',
             price: 19.75,
             url: 'fhdiuhafhuaierhf.com/wateringcan',
-            description: 'For helping your garden to grow.', 
+            description: 'For helping your garden to grow.',
             category: catId
         });
         const id = newProd.id;
         const deletedProduct = await store.delete(id);
         expect(deletedProduct).toEqual({
             id: id,
-            name: 'Watering Can', 
+            name: 'Watering Can',
             price: 19.75,
             url: 'fhdiuhafhuaierhf.com/wateringcan',
-            description: 'For helping your garden to grow.', 
+            description: 'For helping your garden to grow.',
             category: catId
         });
         const result = await store.show(id);
@@ -141,7 +143,7 @@ describe('Product Model', () => {
         const catId = await getForeignKey('category');
         const newProd = await store.create({
             id: '',
-            name: 'Smart Phone', 
+            name: 'Smart Phone',
             price: 399.95,
             url: 'fhdiuhafhuaierhf.com/smartphone',
             description: 'For staying in touch.',
@@ -149,7 +151,7 @@ describe('Product Model', () => {
         });
         const newProd2 = await store.create({
             id: '',
-            name: 'Tablet Computer', 
+            name: 'Tablet Computer',
             price: 299.95,
             url: 'fhdiuhafhuaierhf.com/tabletcomputer',
             description: 'For being productive.',
@@ -161,13 +163,13 @@ describe('Product Model', () => {
                 id: newProd.id,
                 name: 'Smart Phone',
                 url: 'fhdiuhafhuaierhf.com/smartphone',
-                description: 'For staying in touch.', 
-                price: 399.95, 
+                description: 'For staying in touch.',
+                price: 399.95,
                 category: catId
             },
             {
                 id: newProd2.id,
-                name: 'Tablet Computer', 
+                name: 'Tablet Computer',
                 price: 299.95,
                 url: 'fhdiuhafhuaierhf.com/tabletcomputer',
                 description: 'For being productive.',

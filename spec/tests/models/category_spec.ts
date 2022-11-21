@@ -1,4 +1,7 @@
-import {Category, CategoryStore} from '../../../src/models/categories';
+import dotenv from 'dotenv';
+dotenv.config();
+
+import { CategoryStore } from '../../../src/models/categories';
 
 const store = new CategoryStore();
 
@@ -69,7 +72,7 @@ describe('Category Model', () => {
         expect(deletedCat).toEqual({
             id: id,
             category: 'Clothing'
-        }); 
+        });
         const result = await store.show(id);
         expect(result).toBeUndefined();
     });

@@ -1,8 +1,5 @@
-import dotenv from 'dotenv';
 import db from '../database';
 import bcrypt from 'bcrypt';
-
-dotenv.config();
 
 const {
     SUPERUSER_AUTH_LEVEL
@@ -25,9 +22,9 @@ export class UserStore {
             const result = await conn.query(sql, [SUPERUSER_AUTH_LEVEL]);
             conn.release();
             let users = result.rows;
-            users = users.map(el => {return {id: el.id, auth_level: el.auth_level, first_name: el.first_name, last_name: el.last_name, username: el.username, password: ''}});
+            users = users.map(el => { return { id: el.id, auth_level: el.auth_level, first_name: el.first_name, last_name: el.last_name, username: el.username, password: '' } });
             users = users.filter(el => parseInt(el.auth_level) <= parseInt(auth_level as string));
-            return users; 
+            return users;
         } catch (err) {
             throw new Error(`Could not get users. ${err}`);
         }
@@ -51,9 +48,9 @@ export class UserStore {
         } catch (err) {
             throw new Error(`Could not find user ${id}. ${err}`);
         }
-      }
+    }
 
-      async create(user: User): Promise<User> {
+    async create(user: User): Promise<User> {
         try {
             //  Check for attempt to create a super user  
             if (parseInt(user.auth_level as string) >= parseInt(SUPERUSER_AUTH_LEVEL as string)) {
@@ -86,7 +83,7 @@ export class UserStore {
             // Check for attempt to modify a user at a higher authorisation level
             const conn = await db.connect();
             const checkSql = 'SELECT auth_level FROM users WHERE id = ($1)';
-            const result =  await conn.query(checkSql, [user.id]);
+            const result = await conn.query(checkSql, [user.id]);
             if (parseInt(result.rows[0].auth_level) > parseInt(auth_level as string)) {
                 throw new Error('You are not authorised to modify this user.');
             }
@@ -96,16 +93,16 @@ export class UserStore {
             let argList = [];
             let sql = 'UPDATE users SET';
             type argType = 'auth_level' | 'first_name' | 'last_name' | 'username';
-            let args: argType[] = ['auth_level' , 'first_name', 'last_name', 'username'];
+            let args: argType[] = ['auth_level', 'first_name', 'last_name', 'username'];
             for (let i = 0; i < args.length; i++) {
                 const prop: argType = args[i];
-                if(user[prop]) {
+                if (user[prop]) {
                     sql += (argCount > 1 ? ', ' : ' ');
                     sql += `${prop} = ($${argCount++})`;
                     argList.push(user[prop]);
                 }
             }
-        
+
             // If password is being updated, create a hash from the password
             if (user.password) {
                 const hash = this.#hashPassword(user.password);
@@ -119,7 +116,7 @@ export class UserStore {
                 argList.push(user.id);
                 sql += ` WHERE id = ($${argCount}) RETURNING *`;
                 const conn = await db.connect();
-        
+
                 const result = await conn.query(sql, argList);
                 const updatedUser = result.rows[0];
                 delete updatedUser.password_digest;
@@ -144,7 +141,7 @@ export class UserStore {
             // Check for attempt to delete a user at a higher authorisation level
             const conn = await db.connect();
             const checkSql = 'SELECT auth_level FROM users WHERE id = ($1)';
-            const chkResult =  await conn.query(checkSql, [id]);
+            const chkResult = await conn.query(checkSql, [id]);
             if (parseInt(chkResult.rows[0].auth_level) > parseInt(auth_level as string)) {
                 throw new Error('You are not authorised to delete this user.');
             }
@@ -156,7 +153,7 @@ export class UserStore {
             user.password = '';
             conn.release();
             return user;
-            
+
         } catch (err) {
             throw new Error(`Could not delete user ${id}. ${err}`);
         }
@@ -179,19 +176,19 @@ export class UserStore {
 
             throw new Error('No user found with those credentials');
 
-        }  catch(err) {
+        } catch (err) {
             throw new Error(`Could not authenticate user ${username}. ${err}`);
-        } 
-         
+        }
+
     }
 
     // Return an encrypted version of the given password
-    #hashPassword(password: string) : string {
+    #hashPassword(password: string): string {
         return bcrypt.hashSync(password + process.env.BCRYPT_PASSWORD, parseInt(process.env.SALT_ROUNDS as string));
     }
 
     // Check if the given id belongs to the super user
-    async #isSuperuser(id: string) : Promise<boolean> {
+    async #isSuperuser(id: string): Promise<boolean> {
         const conn = await db.connect();
         const sql = 'SELECT auth_level FROM users WHERE id = ($1)';
         const result = await conn.query(sql, [id]);

@@ -1,8 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import getForeignKey from '../helpers/get_foreign_key';
-import {OrderStore} from '../../../src/models/orders';
+import { OrderStore } from '../../../src/models/orders';
 
 const store = new OrderStore();
-
 
 describe('Order Model', () => {
     it('should have an index method', () => {
@@ -43,7 +45,7 @@ describe('Order Model', () => {
             date_time: null,
             status: 'active',
             products: [
-                {product_id: productId, quantity: 1}
+                { product_id: productId, quantity: 1 }
             ]
         });
         expect(result).toEqual({
@@ -53,7 +55,7 @@ describe('Order Model', () => {
             date_time: result.date_time,
             status: 'active',
             products: [
-                {product_id: productId, quantity: 1}
+                { product_id: productId, quantity: 1 }
             ]
         });
     });
@@ -63,12 +65,12 @@ describe('Order Model', () => {
         const productId = await getForeignKey('product');
         await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'active',
             products: [
-                {product_id: productId, quantity: 1}
+                { product_id: productId, quantity: 1 }
             ]
         });
         const result = await store.index(null);
@@ -80,12 +82,12 @@ describe('Order Model', () => {
         const productId = await getForeignKey('product');
         const result = await store.create({
             id: '',
-            user_id: userId, 
+            user_id: userId,
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'active',
             products: [
-                {product_id: productId, quantity: 1}
+                { product_id: productId, quantity: 1 }
             ]
         });
         const test_data = await store.show(result.id, null);
@@ -96,7 +98,7 @@ describe('Order Model', () => {
             date_time: result.date_time,
             status: 'active',
             products: [
-                {product_id: productId, quantity: 1}
+                { product_id: productId, quantity: 1 }
             ]
         });
     });
@@ -108,20 +110,20 @@ describe('Order Model', () => {
             id: '',
             user_id: userId1,
             delivery_address: '1 My Street, My Town',
-            date_time: null, 
+            date_time: null,
             status: 'active',
             products: [
-                {product_id: productId1, quantity: 1}
+                { product_id: productId1, quantity: 1 }
             ]
         });
         const userId2 = await getForeignKey('user');
         const productId2 = await getForeignKey('product');
         newOrder.user_id = userId2;
         newOrder.delivery_address = '2 Your Street, Your Town',
-        newOrder.date_time = null,
-        newOrder.status = 'complete';
+            newOrder.date_time = null,
+            newOrder.status = 'complete';
         newOrder.products = [
-            {product_id: productId2, quantity: 2}
+            { product_id: productId2, quantity: 2 }
         ];
         const result = await store.update(newOrder, null);
         expect(result).toEqual({
@@ -131,7 +133,7 @@ describe('Order Model', () => {
             date_time: result.date_time,
             status: 'complete',
             products: [
-                {product_id: productId2, quantity: 2}
+                { product_id: productId2, quantity: 2 }
             ]
         });
     });
@@ -146,7 +148,7 @@ describe('Order Model', () => {
             date_time: null,
             status: 'active',
             products: [
-                {product_id: productId1, quantity: 1}
+                { product_id: productId1, quantity: 1 }
             ]
         });
         newOrder.user_id = '';
@@ -160,7 +162,7 @@ describe('Order Model', () => {
             date_time: result.date_time,
             status: 'complete',
             products: [
-                {product_id: productId1, quantity: 1}
+                { product_id: productId1, quantity: 1 }
             ]
         });
         const productId2 = await getForeignKey('product');
@@ -169,7 +171,7 @@ describe('Order Model', () => {
         newOrder.date_time = null;
         newOrder.status = '';
         newOrder.products = [
-            {product_id: productId2, quantity: 2}
+            { product_id: productId2, quantity: 2 }
         ];
         const result2 = await store.update(newOrder, null);
         expect(result2).toEqual({
@@ -179,7 +181,7 @@ describe('Order Model', () => {
             date_time: result2.date_time,
             status: 'complete',
             products: [
-                {product_id: productId2, quantity: 2}
+                { product_id: productId2, quantity: 2 }
             ]
         });
     });
@@ -194,7 +196,7 @@ describe('Order Model', () => {
             date_time: null,
             status: 'complete',
             products: [
-                {product_id: productId, quantity: 2}
+                { product_id: productId, quantity: 2 }
             ]
         });
         const id = newOrder.id;
@@ -204,10 +206,10 @@ describe('Order Model', () => {
             id: id,
             user_id: userId,
             delivery_address: '1 My Street, My Town',
-            date_time: date_time, 
+            date_time: date_time,
             status: 'complete',
             products: [
-                {product_id: productId, quantity: 2}
+                { product_id: productId, quantity: 2 }
             ]
         });
         const result = await store.show(id, null);
@@ -225,17 +227,17 @@ describe('Order Model', () => {
             date_time: null,
             status: 'complete',
             products: [
-                {product_id: productId1, quantity: 2}
+                { product_id: productId1, quantity: 2 }
             ]
         });
         const activeOrder = await store.create({
             id: '',
             user_id: userId,
             delivery_address: '2 Your Street, Your Town',
-            date_time: null, 
+            date_time: null,
             status: 'active',
             products: [
-                {product_id: productId2, quantity: 1}
+                { product_id: productId2, quantity: 1 }
             ]
         });
         const result = await store.currentOrder(userId);
@@ -246,7 +248,7 @@ describe('Order Model', () => {
             date_time: result.date_time,
             status: 'active',
             products: [
-                {product_id: productId2, quantity: 1}
+                { product_id: productId2, quantity: 1 }
             ]
         });
     });
@@ -262,7 +264,7 @@ describe('Order Model', () => {
             date_time: null,
             status: 'complete',
             products: [
-                {product_id: productId1, quantity: 2}
+                { product_id: productId1, quantity: 2 }
             ]
         });
         const activeOrder = await store.create({
@@ -272,7 +274,7 @@ describe('Order Model', () => {
             date_time: null,
             status: 'active',
             products: [
-                {product_id: productId2, quantity: 1}
+                { product_id: productId2, quantity: 1 }
             ]
         });
         const results = await store.completedOrders(userId);
@@ -283,7 +285,7 @@ describe('Order Model', () => {
             date_time: results[0].date_time,
             status: 'complete',
             products: [
-                {product_id: productId1, quantity: 2}
+                { product_id: productId1, quantity: 2 }
             ]
         });
     });
