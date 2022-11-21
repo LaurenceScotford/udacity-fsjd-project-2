@@ -1,11 +1,19 @@
 {
-  "dev": {
+  "prod": {
     "driver": "pg",
     "host": {"ENV": "PROD_POSTGRES_HOST"},
     "port": {"ENV": "PROD_POSTGRES_PORT"},
     "database": {"ENV": "PROD_POSTGRES_DB"},
     "user": {"ENV": "PROD_POSTGRES_USER"},
     "password": {"ENV": "PROD_POSTGRES_PASSWORD"}
+  },
+  "dev": {
+    "driver": "pg",
+    "host": {"ENV": "DEV_POSTGRES_HOST"},
+    "port": {"ENV": "DEV_POSTGRES_PORT"},
+    "database": {"ENV": "DEV_POSTGRES_DB"},
+    "user": {"ENV": "DEV_POSTGRES_USER"},
+    "password": {"ENV": "DEV_POSTGRES_PASSWORD"}
   },
   "test": {
     "driver": "pg",

@@ -3,46 +3,47 @@ import bcrypt from 'bcrypt';
 
 const {
     ENV,
-    PROD_POSTGRES_HOST,
-    PROD_POSTGRES_PORT,
-    PROD_POSTGRES_DB,
-    PROD_POSTGRES_USER,
-    PROD_POSTGRES_PASSWORD,
-    TEST_POSTGRES_HOST,
-    TEST_POSTGRES_PORT,
-    TEST_POSTGRES_DB,
-    TEST_POSTGRES_USER,
-    TEST_POSTGRES_PASSWORD,
     SUPERUSER_USERNAME,
     SUPERUSER_PASSWORD,
     SUPERUSER_AUTH_LEVEL
 } = process.env;
 
 let config: PoolConfig;
+let postgres_host, postgres_port, postgres_db, postgres_user, postgres_password;
 
 switch ((ENV as string).trim()) {
+    case 'prod':
+        postgres_host = process.env.PROD_POSTGRES_HOST;
+        postgres_port = process.env.PROD_POSTGRES_PORT;
+        postgres_db = process.env.PROD_POSTGRES_DB;
+        postgres_user = process.env.PROD_POSTGRES_USER;
+        postgres_password = process.env.PROD_POSTGRES_PASSWORD;
+        break;
     case 'dev':
-        config = {
-            host: PROD_POSTGRES_HOST,
-            port: parseInt(PROD_POSTGRES_PORT as string),
-            database: PROD_POSTGRES_DB,
-            user: PROD_POSTGRES_USER,
-            password: PROD_POSTGRES_PASSWORD
-        };
+        postgres_host = process.env.DEV_POSTGRES_HOST;
+        postgres_port = process.env.DEV_POSTGRES_PORT;
+        postgres_db = process.env.DEV_POSTGRES_DB;
+        postgres_user = process.env.DEV_POSTGRES_USER;
+        postgres_password = process.env.DEV_POSTGRES_PASSWORD;
         break;
     case 'test':
-        config = {
-            host: TEST_POSTGRES_HOST,
-            port: parseInt(TEST_POSTGRES_PORT as string),
-            database: TEST_POSTGRES_DB,
-            user: TEST_POSTGRES_USER,
-            password: TEST_POSTGRES_PASSWORD
-        };
+        postgres_host = process.env.TEST_POSTGRES_HOST;
+        postgres_port = process.env.TEST_POSTGRES_PORT;
+        postgres_db = process.env.TEST_POSTGRES_DB;
+        postgres_user = process.env.TEST_POSTGRES_USER;
+        postgres_password = process.env.TEST_POSTGRES_PASSWORD;
         break;
     default:
         throw new Error(`The environment ${ENV} is not supported.`)
 }
 
+config = {
+    host: postgres_host,
+    port: parseInt(postgres_port as string),
+    database: postgres_db,
+    user: postgres_user,
+    password: postgres_password
+};
 const db = new Pool(config);
 
 // Create superuser if it doesn't exist
