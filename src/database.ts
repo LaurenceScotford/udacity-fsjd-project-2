@@ -1,5 +1,5 @@
 import { PoolConfig, Pool } from 'pg';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const {
     ENV,

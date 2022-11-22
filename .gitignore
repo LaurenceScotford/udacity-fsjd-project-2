@@ -12,3 +12,6 @@ dist/**
 
 #Exclude built database
 data/**
+
+#Exclude zip files
+*.zip

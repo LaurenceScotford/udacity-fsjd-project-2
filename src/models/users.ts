@@ -1,5 +1,5 @@
 import db from '../database';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const {
     SUPERUSER_AUTH_LEVEL
