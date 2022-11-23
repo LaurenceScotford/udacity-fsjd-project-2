@@ -1,5 +1,5 @@
 import db from '../database';
-import {TokenInterface} from '../middleware/verifyAuthToken';
+import { TokenInterface } from '../middleware/verifyAuthToken';
 
 type OrderProducts = {
     product_id: string;
@@ -16,7 +16,7 @@ export type Order = {
 };
 
 export class OrderStore {
-    
+
     async index(user_id: string | null): Promise<Order[]> {
         try {
             const conn = await db.connect();
@@ -35,9 +35,9 @@ export class OrderStore {
                         status: result.rows[i].status,
                         products: await this.#getProductList(result.rows[i].id)
                     });
-                } 
-            } 
-            return orders; 
+                }
+            }
+            return orders;
         } catch (err) {
             throw new Error(`Could not get orders. Error: ${err}`)
         }
@@ -71,13 +71,13 @@ export class OrderStore {
             } else {
                 return result.rows[0];
             }
-            
+
         } catch (err) {
             throw new Error(`Could not find order ${id}. Error: ${err}`)
         }
-      }
+    }
 
-      async create(order: Order): Promise<Order> {
+    async create(order: Order): Promise<Order> {
         try {
             // Check that a new current order is not being opened for a user who already has an open order
             if (order.status === 'active' && await this.currentOrder(order.user_id)) {
@@ -104,81 +104,81 @@ export class OrderStore {
             throw new Error(`Could not add new order for user_id ${order.user_id}. Error: ${err}`)
         }
     }
-  
+
     async update(order: Order, payload: TokenInterface | null): Promise<Order> {
         try {
-                // Check for attempt to update order not owned
-                if (payload && payload.user.own) {
-                    let currentOrder = await this.show(order.id, null);
-                    if (currentOrder.user_id != payload.user.id) {
-                        throw new Error('You are not authorised to modify orders that you don\'t own');
-                    }
+            // Check for attempt to update order not owned
+            if (payload && payload.user.own) {
+                let currentOrder = await this.show(order.id, null);
+                if (currentOrder.user_id != payload.user.id) {
+                    throw new Error('You are not authorised to modify orders that you don\'t own');
                 }
+            }
 
-                // If the order status is being set to active, check that there is not already a
-                // different active order for this user
-                if (order.status === 'active') {
-                    const activeOrder = await this.currentOrder(order.user_id);
-                    if (activeOrder && activeOrder.id !== order.id ) {
-                        throw new Error('A user can only have a single active order');
-                    }
+            // If the order status is being set to active, check that there is not already a
+            // different active order for this user
+            if (order.status === 'active') {
+                const activeOrder = await this.currentOrder(order.user_id);
+                if (activeOrder && activeOrder.id !== order.id) {
+                    throw new Error('A user can only have a single active order');
                 }
+            }
 
-                // Scan parameter for properties to be updated
-                let argCount = 1;
-                let argList = []; 
-                let sql = 'UPDATE orders SET';
-                type argType = 'user_id' | 'delivery_address' | 'status';
-                let args: argType[] = ['user_id', 'delivery_address', 'status'];
-                for (let i = 0; i < args.length; i++) {
-                    const prop: argType = args[i];
-                    if(order[prop]) {
-                        sql += (argCount > 1 ? ', ' : ' ');
-                        sql += `${prop} = ($${argCount++})`;
-                        argList.push(order[prop]);
-                    }
+            // Scan parameter for properties to be updated
+            let argCount = 1;
+            let argList = [];
+            let sql = 'UPDATE orders SET';
+            type argType = 'user_id' | 'delivery_address' | 'status';
+            let args: argType[] = ['user_id', 'delivery_address', 'status'];
+            for (let i = 0; i < args.length; i++) {
+                const prop: argType = args[i];
+                if (order[prop]) {
+                    sql += (argCount > 1 ? ', ' : ' ');
+                    sql += `${prop} = ($${argCount++})`;
+                    argList.push(order[prop]);
                 }
-      
-                let updatedOrder : Order;
-                let wasUpdated: Boolean = ((argList.length > 0) || (order.products && order.products.length > 0));
+            }
 
-                // If at least one property has been updated, do the update
-                if (argList.length) {
-                    argList.push(order.id);
-                    sql += `, date_time = ${Date.now()} WHERE id = ($${argCount}) RETURNING *`;
-                    
-                } else if (order.products && order.products.length) {
-                    // The products only have been updated, so just update the timestamp here
-                    argList = [order.id];
-                    sql = `UPDATE orders SET date_time = ${Date.now()} WHERE id = ($1) RETURNING *`
-                } 
+            let updatedOrder: Order;
+            let wasUpdated: Boolean = ((argList.length > 0) || (order.products && order.products.length > 0));
 
-                // If there's been any change, write the new record
-                if (wasUpdated) {
-                    const conn = await db.connect();
-                    const result = await conn.query(sql, argList);
-                    updatedOrder = result.rows[0];
-                    conn.release();
-                } else {
-                    updatedOrder = await this.show(order.id, null);
-                }
-                    
-                // If the product list has been updated, amend the entries in the order_products table
-                if (order.products && order.products.length) {
-                    // First remove all existing entries
-                    await this.#deleteProductList(order.id);
+            // If at least one property has been updated, do the update
+            if (argList.length) {
+                argList.push(order.id);
+                sql += `, date_time = ${Date.now()} WHERE id = ($${argCount}) RETURNING *`;
 
-                    // Now set the revised product list
-                    await this.#setProductList(order.id, order.products);
-                }
-                
-                // If something has been updated, return the updated order
-                if (argList.length || (order.products && order.products.length)) {
-                    updatedOrder.products = await this.#getProductList(order.id);
-                    return updatedOrder;
-                } else {
-                    throw new Error('No properties were passed in to update');
-                }
+            } else if (order.products && order.products.length) {
+                // The products only have been updated, so just update the timestamp here
+                argList = [order.id];
+                sql = `UPDATE orders SET date_time = ${Date.now()} WHERE id = ($1) RETURNING *`
+            }
+
+            // If there's been any change, write the new record
+            if (wasUpdated) {
+                const conn = await db.connect();
+                const result = await conn.query(sql, argList);
+                updatedOrder = result.rows[0];
+                conn.release();
+            } else {
+                updatedOrder = await this.show(order.id, null);
+            }
+
+            // If the product list has been updated, amend the entries in the order_products table
+            if (order.products && order.products.length) {
+                // First remove all existing entries
+                await this.#deleteProductList(order.id);
+
+                // Now set the revised product list
+                await this.#setProductList(order.id, order.products);
+            }
+
+            // If something has been updated, return the updated order
+            if (argList.length || (order.products && order.products.length)) {
+                updatedOrder.products = await this.#getProductList(order.id);
+                return updatedOrder;
+            } else {
+                throw new Error('No properties were passed in to update');
+            }
         } catch (err) {
             throw new Error(`Could not update order ${order.id}. Error: ${err}`)
         }
@@ -228,7 +228,7 @@ export class OrderStore {
             } else {
                 return result.rows[0];
             }
-            
+
         } catch (err) {
             throw new Error(`Could not get current order for user_id ${id}. Error: ${err}`)
         }
@@ -250,29 +250,29 @@ export class OrderStore {
                     status: result.rows[i].status,
                     products: await this.#getProductList(result.rows[i].id)
                 }
-            } 
+            }
             return orders;
-            
+
         } catch (err) {
             throw new Error(`Could not get current order for user_id ${id}. Error: ${err}`)
         }
     }
 
     // Gets a list of products and quantities associated with this order
-    async #getProductList(order: string) : Promise<OrderProducts[]> {
+    async #getProductList(order: string): Promise<OrderProducts[]> {
         try {
             const conn = await db.connect();
             const sql = 'SELECT * FROM order_products WHERE order_id = ($1)';
             const result = await conn.query(sql, [order]);
             conn.release();
-            const products : OrderProducts[] = [];
-            for(var i = 0; i < result.rows.length; i++) {
+            const products: OrderProducts[] = [];
+            for (var i = 0; i < result.rows.length; i++) {
                 products[i] = {
-                    product_id: result.rows[i].product_id, 
+                    product_id: result.rows[i].product_id,
                     quantity: result.rows[i].quantity
                 };
             }
-            return products; 
+            return products;
         } catch (err) {
             throw new Error(`Could not get order_products. Error: ${err}`)
         }
@@ -317,7 +317,7 @@ export class OrderStore {
     }
 
     // Deletes a list of products for a given order
-    async #deleteProductList(order: string) : Promise<void> {
+    async #deleteProductList(order: string): Promise<void> {
         const orderProducts = await this.#getProductList(order);
 
         try {
@@ -327,7 +327,7 @@ export class OrderStore {
                 await conn.query(sql, [order]);
             }
         } catch (err) {
-                    throw new Error(`Could not add del;ete order_products for order_id ${order}. Error: ${err}`)
+            throw new Error(`Could not add del;ete order_products for order_id ${order}. Error: ${err}`)
         }
     }
 }

@@ -109,6 +109,18 @@ const register = async (req: Request, res: Response) => {
     }
 }
 
+const checkUsername = async (req: Request, res: Response) => {
+    try {
+        const available = ! await store.checkUsername(req.body.username);
+        res.json({
+            username_available: available
+        })
+    } catch (err) {
+        res.status(400);
+        res.send(String(err));
+    }
+}
+
 // Reject attempts to create, modify or delete a user at a higher level than you
 const noLeapFrog = (req: Request, res: Response, next: Function) => {
     try {
@@ -126,8 +138,9 @@ const noLeapFrog = (req: Request, res: Response, next: Function) => {
 const users_routes = (app: express.Application) => {
     app.get('/users', verifyAuthToken(1, 2, 'id'), index);
     app.get('/users/:id', verifyAuthToken(1, 2, 'id'), show);
-    app.post('/users', verifyAuthToken(1, 2, 'id'), noLeapFrog, create);
+    app.post('/users/checkusername', checkUsername);
     app.post('/users/register', register);
+    app.post('/users', verifyAuthToken(1, 2, 'id'), noLeapFrog, create);
     app.put('/users/:id', verifyAuthToken(1, 2, 'id'), noLeapFrog, update);
     app.delete('/users/:id', verifyAuthToken(1, 2, 'id'), noLeapFrog, destroy);
     app.post('/users/authenticate', authenticate);

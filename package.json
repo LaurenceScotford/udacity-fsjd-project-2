@@ -5,7 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "start": "node ./dist/server.js",
-    "watch": "npm-run-all -s migrate-prod-up dev",
+    "watch": "npm-run-all -s migrate-up dev",
     "test": "cross-env ENV=test npm-run-all -s migrate-test-up jasmine-tests migrate-test-down --continue-on-error",
     "tsc": "tsc",
     "dev": "tsc-watch --onSuccess \"node -r dotenv/config ./dist/server.js\"",
