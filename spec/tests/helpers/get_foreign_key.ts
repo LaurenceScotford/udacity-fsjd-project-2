@@ -77,6 +77,7 @@ async function getForeignKey(type: string): Promise<string> {
                 const newOrder = await orderStore.create({
                     id: '',
                     user_id: userId,
+                    recipient_name: 'Fred Bloggs',
                     delivery_address: '1 My Street, My Town',
                     date_time: null,
                     status: 'complete',
@@ -91,7 +92,7 @@ async function getForeignKey(type: string): Promise<string> {
 
         }
     } catch (err) {
-        throw new Error(`Could not create foreign key of type ${type}. Error: ${err}`)
+        throw new Error(`Could not create foreign key of type ${type}. ${err}`)
     }
 }
 

@@ -1,4 +1,6 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
+
 import categories_routes from './handlers/categories';
 import products_routes from './handlers/products';
 import users_routes from './handlers/users';
@@ -16,6 +18,8 @@ const address = `${API_HOST}:${API_PORT}`;
 app.use(express.json());
 
 app.use(express.static(__dirname + '/public'));
+
+app.use(cors());
 
 categories_routes(app);
 products_routes(app);

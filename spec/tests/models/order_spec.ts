@@ -27,8 +27,8 @@ describe('Order Model', () => {
         expect(store.delete).toBeDefined();
     });
 
-    it('should have a currentOrder method', () => {
-        expect(store.currentOrder).toBeDefined();
+    it('should have a currentOrders method', () => {
+        expect(store.currentOrders).toBeDefined();
     });
 
     it('should have a completedOrders method', () => {
@@ -41,6 +41,7 @@ describe('Order Model', () => {
         const result = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'active',
@@ -51,6 +52,7 @@ describe('Order Model', () => {
         expect(result).toEqual({
             id: result.id,
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: result.date_time,
             status: 'active',
@@ -66,6 +68,7 @@ describe('Order Model', () => {
         await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'active',
@@ -83,6 +86,7 @@ describe('Order Model', () => {
         const result = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'active',
@@ -94,6 +98,7 @@ describe('Order Model', () => {
         expect(test_data).toEqual({
             id: result.id,
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: result.date_time,
             status: 'active',
@@ -109,6 +114,7 @@ describe('Order Model', () => {
         const newOrder = await store.create({
             id: '',
             user_id: userId1,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'active',
@@ -129,6 +135,7 @@ describe('Order Model', () => {
         expect(result).toEqual({
             id: result.id,
             user_id: userId2,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '2 Your Street, Your Town',
             date_time: result.date_time,
             status: 'complete',
@@ -144,6 +151,7 @@ describe('Order Model', () => {
         const newOrder = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'active',
@@ -158,6 +166,7 @@ describe('Order Model', () => {
         expect(result).toEqual({
             id: result.id,
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: result.date_time,
             status: 'complete',
@@ -167,6 +176,7 @@ describe('Order Model', () => {
         });
         const productId2 = await getForeignKey('product');
         newOrder.user_id = '';
+        newOrder.recipient_name = '';
         newOrder.delivery_address = '';
         newOrder.date_time = null;
         newOrder.status = '';
@@ -177,6 +187,7 @@ describe('Order Model', () => {
         expect(result2).toEqual({
             id: result.id,
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: result2.date_time,
             status: 'complete',
@@ -192,6 +203,7 @@ describe('Order Model', () => {
         const newOrder = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'complete',
@@ -205,6 +217,7 @@ describe('Order Model', () => {
         expect(deletedOrder).toEqual({
             id: id,
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: date_time,
             status: 'complete',
@@ -216,13 +229,14 @@ describe('Order Model', () => {
         expect(result).toBeUndefined();
     });
 
-    it('should show the active order for a customer when the currentOrder method is invoked', async () => {
+    it('should show the active orders for a customer when the currentOrders method is invoked', async () => {
         const userId = await getForeignKey('user');
         const productId1 = await getForeignKey('product');
         const productId2 = await getForeignKey('product');
         const completedOrder = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'complete',
@@ -233,6 +247,7 @@ describe('Order Model', () => {
         const activeOrder = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Freda Bloggs',
             delivery_address: '2 Your Street, Your Town',
             date_time: null,
             status: 'active',
@@ -240,17 +255,18 @@ describe('Order Model', () => {
                 { product_id: productId2, quantity: 1 }
             ]
         });
-        const result = await store.currentOrder(userId);
-        expect(result).toEqual({
-            id: result.id,
+        const result = await store.currentOrders(userId);
+        expect(result).toEqual([{
+            id: result[0].id,
             user_id: userId,
+            recipient_name: 'Freda Bloggs',
             delivery_address: '2 Your Street, Your Town',
-            date_time: result.date_time,
+            date_time: result[0].date_time,
             status: 'active',
             products: [
                 { product_id: productId2, quantity: 1 }
             ]
-        });
+        }]);
     });
 
     it('should list completed orders for a customer when the completedOrders method is invoked', async () => {
@@ -260,6 +276,7 @@ describe('Order Model', () => {
         const completedOrder = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: null,
             status: 'complete',
@@ -270,6 +287,7 @@ describe('Order Model', () => {
         const activeOrder = await store.create({
             id: '',
             user_id: userId,
+            recipient_name: 'Freda Bloggs',
             delivery_address: '2 Your Street, Your Town',
             date_time: null,
             status: 'active',
@@ -281,6 +299,7 @@ describe('Order Model', () => {
         expect(results[0]).toEqual({
             id: results[0].id,
             user_id: userId,
+            recipient_name: 'Fred Bloggs',
             delivery_address: '1 My Street, My Town',
             date_time: results[0].date_time,
             status: 'complete',

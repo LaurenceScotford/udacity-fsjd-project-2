@@ -6,7 +6,7 @@ export type Product = {
     price: number | string;
     url: string,
     description: string,
-    category: string; 
+    category: string;
 };
 
 export type TopProduct = {
@@ -15,7 +15,7 @@ export type TopProduct = {
     price: number | string;
     category: string;
     url: string;
-    description: string; 
+    description: string;
     quantity: number;
 }
 
@@ -28,9 +28,9 @@ export class ProductStore {
             conn.release();
             let products = result.rows;
             products = products.map(el => this.#priceToNum(el));
-            return products; 
+            return products;
         } catch (err) {
-            throw new Error(`Could not get products. Error: ${err}`)
+            throw new Error(`Could not get products. ${err}`)
         }
     }
 
@@ -43,11 +43,11 @@ export class ProductStore {
             let product = result.rows[0];
             return this.#priceToNum(product);
         } catch (err) {
-            throw new Error(`Could not find product ${id}. Error: ${err}`)
+            throw new Error(`Could not find product ${id}. ${err}`)
         }
-      }
+    }
 
-      async create(prod: Product): Promise<Product> {
+    async create(prod: Product): Promise<Product> {
         try {
             const sql = 'INSERT INTO products (name, price, url, description, category) VALUES($1, $2, $3, $4, $5) RETURNING *';
             const conn = await db.connect();
@@ -56,21 +56,21 @@ export class ProductStore {
             conn.release();
             return this.#priceToNum(product);
         } catch (err) {
-            throw new Error(`Could not add new product ${prod.name}. Error: ${err}`)
+            throw new Error(`Could not add new product ${prod.name}. ${err}`)
         }
     }
-  
+
     async update(prod: Product): Promise<Product> {
         try {
             // Scan parameter for properties to be updated
             let argCount = 1;
-            let argList = []; 
+            let argList = [];
             let sql = 'UPDATE products SET';
             type argType = 'name' | 'price' | 'url' | 'description' | 'category';
             let args: argType[] = ['name', 'price', 'url', 'description', 'category'];
             for (let i = 0; i < args.length; i++) {
                 const prop: argType = args[i];
-                if(prod[prop]) {
+                if (prod[prop]) {
                     sql += (argCount > 1 ? ', ' : ' ');
                     sql += `${prop} = ($${argCount++})`;
                     argList.push(prod[prop]);
@@ -90,7 +90,7 @@ export class ProductStore {
                 throw new Error('No properties were passed in to update');
             }
         } catch (err) {
-            throw new Error(`Could not update product ${prod.name}. Error: ${err}`)
+            throw new Error(`Could not update product ${prod.name}. ${err}`)
         }
     }
 
@@ -103,7 +103,7 @@ export class ProductStore {
             conn.release();
             return this.#priceToNum(product);
         } catch (err) {
-            throw new Error(`Could not delete product ${id}. Error: ${err}`)
+            throw new Error(`Could not delete product ${id}. ${err}`)
         }
     }
 
@@ -115,9 +115,9 @@ export class ProductStore {
             conn.release();
             let products = result.rows;
             products = products.map(el => this.#priceToNum(el));
-            return products; 
-        } catch(err) {
-            throw new Error(`Could not get products for category_id: ${id}. Error: ${err}`)
+            return products;
+        } catch (err) {
+            throw new Error(`Could not get products for category_id: ${id}. ${err}`)
         }
     }
 
@@ -127,7 +127,7 @@ export class ProductStore {
             const conn = await db.connect();
             const listSql = 'SELECT product_id, quantity FROM order_products WHERE order_id IN (SELECT id AS order_id FROM orders WHERE status = \'complete\')';
             const result = await conn.query(listSql);
-            const products: {[key: string]: number} = {};
+            const products: { [key: string]: number } = {};
             for (let i = 0; i < result.rows.length; i++) {
                 const id = result.rows[i].product_id;
                 const quantity = result.rows[i].quantity;
@@ -141,9 +141,9 @@ export class ProductStore {
             }
 
             // Sort the products by quantity
-            const sortList: {id: string, quantity: number}[] = [];
+            const sortList: { id: string, quantity: number }[] = [];
             for (let product in products) {
-                sortList.push({id: product, quantity: products[product]});
+                sortList.push({ id: product, quantity: products[product] });
             }
 
             sortList.sort((a, b) => {
@@ -152,9 +152,10 @@ export class ProductStore {
 
             // Now get a list of products and quantities
             const topList: TopProduct[] = []
-            for (let i = 0; i < (sortList.length < numToShow ? sortList.length : numToShow); i++) {
+            const num = numToShow as number;
+            for (let i = 0; i < (sortList.length < num ? sortList.length : num); i++) {
                 const sql = 'SELECT * FROM products WHERE id = ($1)';
-                const result = await conn.query(sql,[sortList[i].id]);
+                const result = await conn.query(sql, [sortList[i].id]);
                 const prod = result.rows[0];
                 topList.push({
                     id: prod.id,
@@ -162,14 +163,14 @@ export class ProductStore {
                     price: prod.price,
                     url: prod.url,
                     description: prod.description,
-                    category: prod.category, 
+                    category: prod.category,
                     quantity: sortList[i].quantity
                 });
             }
 
             conn.release();
             return topList;
-        } catch(err) {
+        } catch (err) {
             throw new Error(`Could not get the list of top products. Err${err}`);
         }
     }

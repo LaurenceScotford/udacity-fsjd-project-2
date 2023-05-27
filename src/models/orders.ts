@@ -1,3 +1,5 @@
+import { QueryResult } from 'pg'
+
 import db from '../database';
 import { TokenInterface } from '../middleware/verifyAuthToken';
 
@@ -9,6 +11,7 @@ type OrderProducts = {
 export type Order = {
     id: string;
     user_id: string;
+    recipient_name: string;
     delivery_address: string;
     date_time: number | null;
     status: string;
@@ -23,23 +26,9 @@ export class OrderStore {
             const sql = 'SELECT * FROM orders';
             const result = await conn.query(sql);
             conn.release();
-            let orders: Order[] = [];
-            for (let i = 0; i < result.rows.length; i++) {
-                // If we're listing orders for a specific user, filter out orders that are not owned by that user
-                if (!user_id || user_id == result.rows[i].user_id) {
-                    orders.push({
-                        id: result.rows[i].id,
-                        user_id: result.rows[i].user_id,
-                        delivery_address: result.rows[i].delivery_address,
-                        date_time: result.rows[i].date_time,
-                        status: result.rows[i].status,
-                        products: await this.#getProductList(result.rows[i].id)
-                    });
-                }
-            }
-            return orders;
+            return this.resultToOrdersArray(result, user_id);
         } catch (err) {
-            throw new Error(`Could not get orders. Error: ${err}`)
+            throw new Error(`Could not get orders. ${err}`)
         }
     }
 
@@ -62,6 +51,7 @@ export class OrderStore {
                 const order: Order = {
                     id: result.rows[0].id,
                     user_id: result.rows[0].user_id,
+                    recipient_name: result.rows[0].recipient_name,
                     delivery_address: result.rows[0].delivery_address,
                     date_time: result.rows[0].date_time,
                     status: result.rows[0].status,
@@ -73,26 +63,22 @@ export class OrderStore {
             }
 
         } catch (err) {
-            throw new Error(`Could not find order ${id}. Error: ${err}`)
+            throw new Error(`Could not find order ${id}. ${err}`)
         }
     }
 
     async create(order: Order): Promise<Order> {
         try {
-            // Check that a new current order is not being opened for a user who already has an open order
-            if (order.status === 'active' && await this.currentOrder(order.user_id)) {
-                throw new Error('A user can only have a single active order');
-            }
-
-            const sql = 'INSERT INTO orders (user_id, delivery_address, date_time, status) VALUES($1, $2, $3, $4) RETURNING *';
+            const sql = 'INSERT INTO orders (user_id, recipient_name, delivery_address, date_time, status) VALUES($1, $2, $3, $4, $5) RETURNING *';
             const conn = await db.connect();
-            const result = await conn.query(sql, [order.user_id, order.delivery_address, Date.now(), order.status]);
+            const result = await conn.query(sql, [order.user_id, order.recipient_name, order.delivery_address, Date.now(), order.status]);
             conn.release();
             await this.#setProductList(result.rows[0].id, order.products);
 
             const newOrder: Order = {
                 id: result.rows[0].id,
                 user_id: result.rows[0].user_id,
+                recipient_name: result.rows[0].recipient_name,
                 delivery_address: result.rows[0].delivery_address,
                 date_time: result.rows[0].date_time,
                 status: result.rows[0].status,
@@ -101,7 +87,7 @@ export class OrderStore {
 
             return newOrder;
         } catch (err) {
-            throw new Error(`Could not add new order for user_id ${order.user_id}. Error: ${err}`)
+            throw new Error(`Could not add new order for user_id ${order.user_id}. ${err}`)
         }
     }
 
@@ -117,19 +103,19 @@ export class OrderStore {
 
             // If the order status is being set to active, check that there is not already a
             // different active order for this user
-            if (order.status === 'active') {
-                const activeOrder = await this.currentOrder(order.user_id);
-                if (activeOrder && activeOrder.id !== order.id) {
-                    throw new Error('A user can only have a single active order');
-                }
-            }
+            // if (order.status === 'active') {
+            //     const activeOrder = await this.currentOrder(order.user_id);
+            //     if (activeOrder && activeOrder.id !== order.id) {
+            //         throw new Error('A user can only have a single active order');
+            //     }
+            // }
 
             // Scan parameter for properties to be updated
             let argCount = 1;
             let argList = [];
             let sql = 'UPDATE orders SET';
-            type argType = 'user_id' | 'delivery_address' | 'status';
-            let args: argType[] = ['user_id', 'delivery_address', 'status'];
+            type argType = 'user_id' | 'recipient_name' | 'delivery_address' | 'status';
+            let args: argType[] = ['user_id', 'recipient_name', 'delivery_address', 'status'];
             for (let i = 0; i < args.length; i++) {
                 const prop: argType = args[i];
                 if (order[prop]) {
@@ -180,7 +166,7 @@ export class OrderStore {
                 throw new Error('No properties were passed in to update');
             }
         } catch (err) {
-            throw new Error(`Could not update order ${order.id}. Error: ${err}`)
+            throw new Error(`Could not update order ${order.id}. ${err}`)
         }
     }
 
@@ -205,32 +191,24 @@ export class OrderStore {
             order.products = productsDeleted;
             return order;
         } catch (err) {
-            throw new Error(`Could not delete order ${id}. Error: ${err}`)
+            throw new Error(`Could not delete order ${id}. ${err}`)
         }
     }
 
-    async currentOrder(id: string): Promise<Order> {
+    async currentOrders(id: string): Promise<Order[]> {
         try {
             const sql = 'SELECT * FROM orders WHERE user_id=($1) AND status=\'active\'';
             const conn = await db.connect();
             const result = await conn.query(sql, [id]);
             conn.release();
-            if (result.rows[0]) {
-                const order: Order = {
-                    id: result.rows[0].id,
-                    user_id: result.rows[0].user_id,
-                    delivery_address: result.rows[0].delivery_address,
-                    date_time: result.rows[0].date_time,
-                    status: result.rows[0].status,
-                    products: await this.#getProductList(result.rows[0].id)
-                }
-                return order;
+            if (result.rowCount) {
+                return this.resultToOrdersArray(result, id);
             } else {
                 return result.rows[0];
             }
 
         } catch (err) {
-            throw new Error(`Could not get current order for user_id ${id}. Error: ${err}`)
+            throw new Error(`Could not get current orders for user_id ${id}. ${err}`)
         }
     }
 
@@ -240,21 +218,9 @@ export class OrderStore {
             const conn = await db.connect();
             const result = await conn.query(sql, [id]);
             conn.release();
-            let orders: Order[] = [];
-            for (let i = 0; i < result.rows.length; i++) {
-                orders[i] = {
-                    id: result.rows[i].id,
-                    user_id: result.rows[i].user_id,
-                    delivery_address: result.rows[i].delivery_address,
-                    date_time: result.rows[i].date_time,
-                    status: result.rows[i].status,
-                    products: await this.#getProductList(result.rows[i].id)
-                }
-            }
-            return orders;
-
+            return this.resultToOrdersArray(result, id);
         } catch (err) {
-            throw new Error(`Could not get current order for user_id ${id}. Error: ${err}`)
+            throw new Error(`Could not get current order for user_id ${id}. ${err}`)
         }
     }
 
@@ -274,7 +240,7 @@ export class OrderStore {
             }
             return products;
         } catch (err) {
-            throw new Error(`Could not get order_products. Error: ${err}`)
+            throw new Error(`Could not get order_products. ${err}`)
         }
     }
 
@@ -290,7 +256,7 @@ export class OrderStore {
                 conn.release();
                 existing = result.rows[0];
             } catch (err) {
-                throw new Error(`Could not find order_products for order_id ${order}. Error: ${err}`)
+                throw new Error(`Could not find order_products for order_id ${order}. ${err}`)
             }
 
             // If an existing listing is found then update the quantity for the existing listing
@@ -301,7 +267,7 @@ export class OrderStore {
                     const result = await conn.query(sql, [existing.quantity + products[i].quantity, existing.id]);
                     conn.release();
                 } catch (err) {
-                    throw new Error(`Could not find order_products for order_id ${order}. Error: ${err}`)
+                    throw new Error(`Could not find order_products for order_id ${order}. ${err}`)
                 }
             } else {    // Otherwise create a new entry for that product
                 try {
@@ -310,7 +276,7 @@ export class OrderStore {
                     const result = await conn.query(sql, [order, products[i].product_id, products[i].quantity]);
                     conn.release();
                 } catch (err) {
-                    throw new Error(`Could not add new order_products for order_id ${order} and product_id ${products[i].product_id}. Error: ${err}`)
+                    throw new Error(`Could not add new order_products for order_id ${order} and product_id ${products[i].product_id}. ${err}`)
                 }
             }
         }
@@ -327,7 +293,32 @@ export class OrderStore {
                 await conn.query(sql, [order]);
             }
         } catch (err) {
-            throw new Error(`Could not add del;ete order_products for order_id ${order}. Error: ${err}`)
+            throw new Error(`Could not add delete order_products for order_id ${order}. ${err}`);
         }
     }
+
+    private async resultToOrdersArray(result: QueryResult<any>, user_id: string | null): Promise<Order[]> {
+        let orders: Order[] = [];
+
+        try {
+            for (let i = 0; i < result.rows.length; i++) {
+                // If we're listing orders for a specific user, filter out orders that are not owned by that user
+                if (!user_id || user_id == result.rows[i].user_id) {
+                    orders.push({
+                        id: result.rows[i].id,
+                        user_id: result.rows[i].user_id,
+                        recipient_name: result.rows[i].recipient_name,
+                        delivery_address: result.rows[i].delivery_address,
+                        date_time: result.rows[i].date_time,
+                        status: result.rows[i].status,
+                        products: await this.#getProductList(result.rows[i].id)
+                    });
+                }
+            }
+            return orders;
+        } catch (err) {
+            throw new Error(`Could not create orders array ${user_id ? `for user_id ${user_id}.` : '.'} ${err}`);
+        }
+    }
+
 }

@@ -159,12 +159,12 @@ export class UserStore {
         }
     }
 
-    // Returns true if given username exists
+    // Returns true if a given username is available
     async checkUsername(username: string): Promise<Boolean> {
         const conn = await db.connect();
         const sql = 'SELECT * FROM users WHERE username = ($1)';
         const result = await conn.query(sql, [username]);
-        return result.rows.length > 0;
+        return result.rowCount === 0;
     }
 
     async authenticate(username: string, password: string): Promise<User> {

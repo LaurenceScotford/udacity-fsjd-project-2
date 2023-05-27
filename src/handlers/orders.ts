@@ -37,6 +37,7 @@ const create = async (req: Request, res: Response) => {
         const order: Order = {
             id: '',
             user_id: req.body.user_id,
+            recipient_name: req.body.recipient_name,
             delivery_address: req.body.delivery_address,
             date_time: null,
             status: req.body.status,
@@ -55,6 +56,7 @@ const update = async (req: Request, res: Response) => {
         const order: Order = {
             id: req.params.id,
             user_id: req.body.user_id,
+            recipient_name: req.body.recipient_name,
             delivery_address: req.body.delivery_address,
             date_time: null,
             status: req.body.status,
@@ -78,9 +80,9 @@ const destroy = async (req: Request, res: Response) => {
     }
 }
 
-const currentOrder = async (req: Request, res: Response) => {
+const currentOrders = async (req: Request, res: Response) => {
     try {
-        const order = await store.currentOrder(req.params.id);
+        const order = await store.currentOrders(req.params.id);
         res.json(order);
     } catch (err) {
         res.status(500);
@@ -101,7 +103,7 @@ const completedOrders = async (req: Request, res: Response) => {
 const orders_routes = (app: express.Application) => {
     app.get('/orders', verifyAuthToken(1, 2, null), index);
     app.get('/orders/:id', verifyAuthToken(1, 2, null), show);
-    app.get('/open_order/:id', verifyAuthToken(1, 2, 'id'), currentOrder);
+    app.get('/open_orders/:id', verifyAuthToken(1, 2, 'id'), currentOrders);
     app.get('/completed_orders/:id', verifyAuthToken(1, 2, 'id'), completedOrders);
     app.post('/orders', verifyAuthToken(1, 2, 'userid'), create);
     app.put('/orders/:id', verifyAuthToken(1, 2, null), update);

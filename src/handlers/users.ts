@@ -7,6 +7,8 @@ const {
     DEFAULT_USER_AUTHLEVEL
 } = process.env;
 
+const EXPIRY_TIME = 86395000;
+
 const store = new UserStore();
 
 const index = async (_req: Request, res: Response) => {
@@ -14,7 +16,6 @@ const index = async (_req: Request, res: Response) => {
         const users = await store.index(res.locals.payload.user.auth_level);
         res.json(users);
     } catch (err) {
-        console.log(err);
         res.status(500);
         res.send(String(err));
     }
@@ -81,8 +82,21 @@ const authenticate = async (req: Request, res: Response) => {
         const authenticatedUser = await store.authenticate(req.body.username, req.body.password);
 
         if (authenticatedUser) {
-            const token = jwt.sign({ user: authenticatedUser }, process.env.TOKEN_SECRET as string);
-            res.json(token);
+            const token = jwt.sign(
+                {
+                    user: {
+                        id: authenticatedUser.id,
+                        auth_level: authenticatedUser.auth_level
+                    }
+                },
+                process.env.TOKEN_SECRET as string,
+                { 'expiresIn': process.env.TOKEN_EXPIRY }
+            );
+            res.json({
+                userId: authenticatedUser.id,
+                idToken: token,
+                expiresIn: EXPIRY_TIME
+            });
         }
 
     } catch (err) {
@@ -111,7 +125,7 @@ const register = async (req: Request, res: Response) => {
 
 const checkUsername = async (req: Request, res: Response) => {
     try {
-        const available = ! await store.checkUsername(req.body.username);
+        const available = await store.checkUsername(req.body.username);
         res.json({
             username_available: available
         })

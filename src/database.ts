@@ -56,7 +56,7 @@ const db = new Pool(config);
             await conn.query(sql, [SUPERUSER_AUTH_LEVEL, 'Super', 'User', SUPERUSER_USERNAME, bcrypt.hashSync((SUPERUSER_PASSWORD as string) + process.env.BCRYPT_PASSWORD, parseInt(process.env.SALT_ROUNDS as string))]);
         }
     } catch (err) {
-        throw new Error(`Could not create superuser. Error: ${err}`);
+        throw new Error(`Could not create superuser. ${err}`);
     }
 })();
 
